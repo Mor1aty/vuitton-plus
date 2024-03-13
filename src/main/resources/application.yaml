@@ -1,0 +1,37 @@
+server:
+  port: 8000
+spring:
+  application:
+    name: vuitton-plus
+  output:
+    ansi:
+      enabled: always
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/vuitton_plus?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&autoReconnect=true&failOverReadOnly=false&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+      client-type: jedis
+      jedis:
+        pool:
+          max-active: 20
+          max-idle: 30
+logging:
+  level:
+    com.moriaty.vuitton.dao.mapper: INFO
+
+file-server:
+  url: http://%s:8100
+  upload-url: http://%s:8102/api/file/upload
+  video:
+    url-prefix: /video
+    video-folder: ${file-server.video.url-prefix}/
+    img-folder: ${file-server.video.url-prefix}/poster/
+  novel:
+    url-prefix: /novel
+    default-novel-img: ${file-server.novel.url-prefix}/default_img.jpg
