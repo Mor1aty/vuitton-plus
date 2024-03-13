@@ -10,14 +10,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -44,6 +40,9 @@ public class AfterStartup implements CommandLineRunner {
     @Value("${server.port:#{null}}")
     private String port;
 
+    @Value("${server.deploy-ip}")
+    private String deployIp;
+
     @Value("${file-server.url}")
     private String fsUrl;
 
@@ -65,31 +64,9 @@ public class AfterStartup implements CommandLineRunner {
         } else {
             portStr = "80".equals(port) ? "" : ":" + port;
         }
-        String ipAddress = findInternalIpAddress();
-        String serverUrl = "http://" + ipAddress + portStr;
+        String serverUrl = "http://" + deployIp + portStr;
         log.info("网站地址: http://127.0.0.1{} {}", portStr, serverUrl);
-        ServerInfo.INFO
-                .setFileServerUrl(String.format(fsUrl, ipAddress))
-                .setFileServerUploadUrl(String.format(fsUploadUrl, ipAddress));
-    }
-
-    private String findInternalIpAddress() {
-        String fileServerIp = System.getenv("FILE_SERVER_IP");
-        if (StringUtils.hasText(fileServerIp) && fileServerIp.startsWith("192.168")) {
-            return fileServerIp;
-        }
-        try {
-            NetworkInterface networkInterface = NetworkInterface.getByName("wlp2s0");
-            for (InterfaceAddress address : networkInterface.getInterfaceAddresses()) {
-                String ipAddress = address.getAddress().getHostAddress();
-                if (ipAddress.contains("192.168")) {
-                    return ipAddress;
-                }
-            }
-        } catch (SocketException e) {
-            log.error("获取内部 IP 地址", e);
-        }
-        return "未知 IP";
+        ServerInfo.INFO.setFileServerUrl(fsUrl).setFileServerUploadUrl(fsUploadUrl);
     }
 
     private void loadNetworkSetting() {

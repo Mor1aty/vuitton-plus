@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * @since 2024/2/8 下午12:24
  */
 @Component
-@ServerEndpoint("ws/video-play")
+@ServerEndpoint("/ws/video-play")
 @Slf4j
 public class VideoPlayWs {
 

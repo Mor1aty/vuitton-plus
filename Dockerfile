@@ -4,10 +4,7 @@ ADD target/vuitton-plus.jar vuitton-plus.jar
 
 EXPOSE 8000
 
-ARG DATASOURCE_URL
-ENV DATASOURCE_URL $DATASOURCE_URL
+ARG DEPLOY_IP
+ENV DEPLOY_IP $DEPLOY_IP
 
-ARG FILE_SERVER_IP
-ENV FILE_SERVER_IP $FILE_SERVER_IP
-
-ENTRYPOINT java -jar vuitton-plus.jar --spring.datasource.url="$DATASOURCE_URL"
+ENTRYPOINT java -jar vuitton-plus.jar --server.deploy-ip="$DEPLOY_IP"
