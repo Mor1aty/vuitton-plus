@@ -1,6 +1,7 @@
 package com.moriaty.vuitton.library.log;
 
 import com.alibaba.fastjson2.JSON;
+import com.moriaty.vuitton.library.wrap.Wrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +48,11 @@ public class ApiLogAspect {
         log.info("Api: {} {}, Req: {}", request.getMethod().toUpperCase(),
                 request.getRequestURI(), JSON.toJSONString(param));
         Object resp = point.proceed();
-        log.info("Api Resp: {}", JSON.toJSONString(resp));
+        if (resp instanceof Wrapper) {
+            log.info("Api Resp: {}", JSON.toJSONString(resp));
+        } else {
+            log.info("Api Resp: {}", resp.getClass());
+        }
         return resp;
     }
 }

@@ -21,10 +21,18 @@ import com.moriaty.vuitton.module.novel.NovelLocalModule;
 import com.moriaty.vuitton.util.NovelUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -64,7 +72,9 @@ public class NovelLocalService {
     public Wrapper<PageResp<NovelChapter>> findChapter(FindChapterReq req) {
         Page<NovelChapter> chapterPage = novelChapterMapper.selectPage(
                 new Page<>(req.getPageNum(), req.getPageSize()), new LambdaQueryWrapper<NovelChapter>()
-                        .eq(NovelChapter::getNovel, req.getNovelId()));
+                        .eq(NovelChapter::getNovel, req.getNovelId())
+                        .select(NovelChapter::getId, NovelChapter::getNovel,
+                                NovelChapter::getIndex, NovelChapter::getTitle));
         return WrapMapper.ok(new PageResp<>(req, chapterPage));
     }
 
@@ -132,5 +142,23 @@ public class NovelLocalService {
                 .setChapter(req.getChapterId())
                 .setReadTime(LocalDateTime.now()));
         return WrapMapper.ok();
+    }
+
+    public ResponseEntity<Resource> downloadNovel(Integer novelId) {
+        Novel novel = novelMapper.selectById(novelId);
+        if (novel == null) {
+            return ResponseEntity.notFound().build();
+        }
+        try {
+            Resource file = new UrlResource(ServerInfo.INFO.getFileServerUrl() + novel.getFileUrl());
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentDisposition(ContentDisposition.attachment()
+                    .filename("[VP]" + URLEncoder.encode(novel.getName(), StandardCharsets.UTF_8) + ".txt").build());
+            return ResponseEntity.ok().headers(headers).body(file);
+        } catch (MalformedURLException e) {
+            log.error("下载小说异常", e);
+            return ResponseEntity.notFound().build();
+        }
+
     }
 }

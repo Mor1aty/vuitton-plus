@@ -31,7 +31,7 @@ import java.util.List;
 public class BiQuGeNovelDownloader extends NovelDownloader {
 
     private final NovelDownloaderMeta meta = new NovelDownloaderMeta()
-            .setWebName("笔趣阁")
+            .setWebName("笔奇部")
             .setMark("BiQuGe")
             .setWebsite("https://www.biqubu1.com")
             .setContentBaseUrl("https://www.biqubu1.com/")
