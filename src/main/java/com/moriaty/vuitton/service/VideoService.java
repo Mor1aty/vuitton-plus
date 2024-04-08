@@ -97,7 +97,11 @@ public class VideoService {
     }
 
     public Wrapper<List<VideoPlayHistoryInfo>> findPlayHistory(FindPlayHistoryReq req) {
-        List<VideoPlayHistoryInfo> playHistoryList = videoPlayHistoryMapper.findPlayHistory(req.getVideoId());
+        if (req.getLimitNum() == null || req.getLimitNum() <= 0) {
+            req.setLimitNum(100);
+        }
+        List<VideoPlayHistoryInfo> playHistoryList = videoPlayHistoryMapper.findPlayHistory(req.getVideoId(),
+                req.getLimitNum());
         return WrapMapper.ok(playHistoryList);
     }
 

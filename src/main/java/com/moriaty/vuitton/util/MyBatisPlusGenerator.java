@@ -19,7 +19,7 @@ public class MyBatisPlusGenerator {
     }
 
     public static void main(String[] args) {
-        String url = "jdbc:mysql://localhost:3306/vuitton_plus?serverTimezone=GMT%2B8&useUnicode=true"
+        String url = "jdbc:mysql://192.168.50.112:3306/vuitton_plus?serverTimezone=GMT%2B8&useUnicode=true"
                      + "&characterEncoding=UTF-8&allowMultiQueries=true&autoReconnect=true&failOverReadOnly=false"
                      + "&useSSL=false&allowPublicKeyRetrieval=true";
         String username = "root";
@@ -37,10 +37,11 @@ public class MyBatisPlusGenerator {
                         .parent("com.moriaty.vuitton.dao")
                         .entity("model"))
                 .templateConfig(builder -> builder
-                        .disable(TemplateType.XML, TemplateType.MAPPER, TemplateType.SERVICE,
+                        .disable(TemplateType.XML, TemplateType.SERVICE,
                                 TemplateType.SERVICE_IMPL, TemplateType.CONTROLLER))
-                .strategyConfig(builder -> builder.entityBuilder()
-                        .enableLombok().enableChainModel().enableFileOverride().disableSerialVersionUID())
+                .strategyConfig(builder -> builder.addInclude("")
+                        .entityBuilder().enableLombok().enableChainModel()
+                        .disableSerialVersionUID())
                 .execute();
     }
 }

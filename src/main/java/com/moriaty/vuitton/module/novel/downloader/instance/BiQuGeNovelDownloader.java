@@ -42,6 +42,7 @@ public class BiQuGeNovelDownloader extends NovelDownloader {
         return meta;
     }
 
+    @Override
     public NovelNetworkInfo findInfo(String catalogueUrl) {
         try {
             NovelNetworkInfo info = new NovelNetworkInfo()
@@ -92,6 +93,7 @@ public class BiQuGeNovelDownloader extends NovelDownloader {
         }
     }
 
+    @Override
     public List<NovelNetworkChapter> findChapterList(String catalogueUrl) {
         try {
             List<NovelNetworkChapter> chapterList = new ArrayList<>();
@@ -111,14 +113,17 @@ public class BiQuGeNovelDownloader extends NovelDownloader {
         }
     }
 
+    @Override
     public NovelNetworkContent findContent(String title, String contentUrl) {
         return exploreContent(title, meta.getContentBaseUrl() + contentUrl, "");
     }
 
+    @Override
     public boolean skipContent(String content) {
         return false;
     }
 
+    @Override
     public String removeAbnormalContent(String content) {
         return content.substring(0, content.lastIndexOf("网页版章节内容慢，请下载爱阅小说app阅读最新内容")).trim();
     }

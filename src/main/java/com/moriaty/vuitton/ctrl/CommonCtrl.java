@@ -1,13 +1,12 @@
 package com.moriaty.vuitton.ctrl;
 
 import com.moriaty.vuitton.bean.common.CommonInfo;
+import com.moriaty.vuitton.bean.common.SettingInfo;
 import com.moriaty.vuitton.library.wrap.Wrapper;
 import com.moriaty.vuitton.service.CommonService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * <p>
@@ -29,4 +28,15 @@ public class CommonCtrl {
     public Wrapper<CommonInfo> info() {
         return commonService.info();
     }
+
+    @GetMapping("setting")
+    public Wrapper<SettingInfo> setting(@RequestParam(value = "group", required = false) Integer group) {
+        return commonService.setting(group);
+    }
+
+    @PostMapping("updateSetting")
+    public Wrapper<Void> updateSetting(@RequestBody SettingInfo settingInfo) {
+        return commonService.updateSetting(settingInfo);
+    }
+
 }

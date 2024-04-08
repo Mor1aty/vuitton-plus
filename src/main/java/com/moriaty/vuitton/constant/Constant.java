@@ -51,4 +51,27 @@ public class Constant {
         );
         public static final int RESPONSE_SUCCESS_CODE = 200;
     }
+
+    public static class Setting {
+
+        private Setting() {
+
+        }
+
+        public static class GroupVideoPlayer {
+
+            private GroupVideoPlayer() {
+
+            }
+
+            public static final int GROUP = 1;
+
+            public static final String SKIP_OP_ED = "skip_op_ed";
+
+            public static final String AUTO_PLAY_NEXT = "auto_play_next";
+
+        }
+
+    }
+
 }

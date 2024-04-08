@@ -38,7 +38,7 @@ public interface VideoPlayHistoryMapper extends BaseMapper<VideoPlayHistory> {
             	1 = 1
             <if test="videoId != null"> AND vph.video = #{videoId} </if>
             ORDER BY vph.play_time DESC
-            LIMIT 100
+            <if test="limitNum != null"> LIMIT #{limitNum} </if>
             </script>""")
-    List<VideoPlayHistoryInfo> findPlayHistory(@Param("videoId") Integer videoId);
+    List<VideoPlayHistoryInfo> findPlayHistory(@Param("videoId") Integer videoId, @Param("limitNum") Integer limitNum);
 }

@@ -15,4 +15,6 @@ public class FindPlayHistoryReq {
 
     private Integer videoId;
 
+    private Integer limitNum;
+
 }
