@@ -31,6 +31,10 @@ public class VideoPlayHistoryInfo {
 
     private String episodeName;
 
+    private Integer episodePlaySecond;
+
+    private String episodePlaySecondStr;
+
     private LocalDateTime playTime;
 
 }

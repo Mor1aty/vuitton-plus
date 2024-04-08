@@ -2,9 +2,8 @@ package com.moriaty.vuitton.util;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
-import com.moriaty.vuitton.bean.network.CommonResponse;
 import com.moriaty.vuitton.constant.Constant;
-import com.zaxxer.hikari.util.FastList;
+import com.moriaty.vuitton.library.wrap.Wrapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.jsoup.Jsoup;
@@ -18,8 +17,15 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * <p>
+ * 文件服务工具
+ * </p>
+ *
+ * @author Moriaty
+ * @since 2024/4/8 下午11:59
+ */
 @Slf4j
 public class FileServerUtil {
 
@@ -59,13 +65,13 @@ public class FileServerUtil {
             }
             String respBodyStr = response.body().string();
             log.info("上传文件完成: {}", respBodyStr);
-            CommonResponse<String> respBody = JSON.parseObject(respBodyStr, new TypeReference<>() {
+            Wrapper<String> respBody = JSON.parseObject(respBodyStr, new TypeReference<>() {
             });
-            if (Constant.Network.RESPONSE_SUCCESS_CODE != respBody.getCode()) {
-                log.error("文件上传失败, " + respBody.getMsg());
+            if (Constant.Network.RESPONSE_SUCCESS_CODE != respBody.code()) {
+                log.error("文件上传失败, {}", respBody.msg());
                 return null;
             }
-            return respBody.getData();
+            return respBody.data();
         }
     }
 

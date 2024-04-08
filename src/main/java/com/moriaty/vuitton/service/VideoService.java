@@ -1,11 +1,14 @@
 package com.moriaty.vuitton.service;
 
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moriaty.vuitton.bean.PageResp;
 import com.moriaty.vuitton.bean.video.VideoAroundEpisode;
 import com.moriaty.vuitton.bean.video.VideoPlayHistoryInfo;
+import com.moriaty.vuitton.bean.video.VideoPlayHistoryRedisInfo;
 import com.moriaty.vuitton.bean.video.req.*;
+import com.moriaty.vuitton.constant.Constant;
 import com.moriaty.vuitton.dao.mapper.VideoEpisodeMapper;
 import com.moriaty.vuitton.dao.mapper.VideoMapper;
 import com.moriaty.vuitton.dao.mapper.VideoPlayHistoryMapper;
@@ -18,6 +21,7 @@ import com.moriaty.vuitton.module.video.VideoModule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -45,6 +49,8 @@ public class VideoService {
     private final VideoEpisodeMapper videoEpisodeMapper;
 
     private final VideoPlayHistoryMapper videoPlayHistoryMapper;
+
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Value("${file-server.video.video-folder}")
     private String videoFolderUrl;
@@ -106,24 +112,45 @@ public class VideoService {
     }
 
     public Wrapper<Void> insertPlayHistory(InsertPlayHistoryReq req) {
-        Video video = videoMapper.selectById(req.getVideoId());
-        if (video == null) {
-            return WrapMapper.failure("视频不存在");
+        String redisKey = Constant.Video.REDIS_PREFIX_PLAY_HISTORY + req.getVideoId();
+        String redisValueJson = stringRedisTemplate.opsForValue().get(redisKey);
+        VideoPlayHistoryRedisInfo redisValue = new VideoPlayHistoryRedisInfo();
+        if (StringUtils.hasText(redisValueJson)) {
+            redisValue = JSON.parseObject(redisValueJson, VideoPlayHistoryRedisInfo.class);
+            redisValue.setEpisodePlaySecond(req.getEpisodePlaySecond());
+        } else {
+            Video video = videoMapper.selectById(req.getVideoId());
+            if (video == null) {
+                return WrapMapper.failure("视频不存在");
+            }
+            VideoEpisode episode = videoEpisodeMapper.selectById(req.getEpisodeId());
+            if (episode == null || !video.getId().equals(episode.getVideo())) {
+                return WrapMapper.failure("视频分集不存在");
+            }
+            redisValue.setKey(redisKey);
+            redisValue.setEpisodePlaySecond(req.getEpisodePlaySecond());
+            redisValue.setVideo(video);
+            redisValue.setVideoEpisode(episode);
         }
-        VideoEpisode episode = videoEpisodeMapper.selectById(req.getEpisodeId());
-        if (episode == null || !video.getId().equals(episode.getVideo())) {
-            return WrapMapper.failure("视频分集不存在");
-        }
-        VideoPlayHistory playHistory = videoPlayHistoryMapper.selectOne(new LambdaQueryWrapper<VideoPlayHistory>()
-                .eq(VideoPlayHistory::getVideo, req.getVideoId())
-                .eq(VideoPlayHistory::getEpisode, req.getEpisodeId()));
-        if (playHistory == null) {
+
+        if (Boolean.FALSE.equals(req.getStore())) {
+            stringRedisTemplate.opsForValue().set(redisKey, JSON.toJSONString(redisValue),
+                    Constant.Video.REDIS_TTL_PLAY_HISTORY);
+        } else {
+            stringRedisTemplate.delete(redisKey);
+            List<VideoPlayHistory> playHistoryList = videoPlayHistoryMapper.selectList(
+                    new LambdaQueryWrapper<VideoPlayHistory>().eq(VideoPlayHistory::getVideo, req.getVideoId()));
+            if (!playHistoryList.isEmpty()) {
+                videoPlayHistoryMapper.deleteBatchIds(playHistoryList.stream().map(VideoPlayHistory::getId).toList());
+            }
+            int episodePlayMinute = req.getEpisodePlaySecond() / 60;
+            int remainEpisodePlaySecond = req.getEpisodePlaySecond() - episodePlayMinute * 60;
             videoPlayHistoryMapper.insert(new VideoPlayHistory()
                     .setVideo(req.getVideoId())
                     .setEpisode(req.getEpisodeId())
+                    .setEpisodePlaySecond(req.getEpisodePlaySecond())
+                    .setEpisodePlaySecondStr(episodePlayMinute + "分" + remainEpisodePlaySecond + "秒")
                     .setPlayTime(LocalDateTime.now()));
-        } else {
-            videoPlayHistoryMapper.updateById(playHistory.setPlayTime(LocalDateTime.now()));
         }
         return WrapMapper.ok();
     }

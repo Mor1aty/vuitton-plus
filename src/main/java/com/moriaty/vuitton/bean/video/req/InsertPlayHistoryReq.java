@@ -20,4 +20,9 @@ public class InsertPlayHistoryReq {
     @NotNull(message = "episodeId 不能为空")
     private Integer episodeId;
 
+    @NotNull(message = "episodePlaySecond 不能为空")
+    private Integer episodePlaySecond;
+
+    private Boolean store;
+
 }

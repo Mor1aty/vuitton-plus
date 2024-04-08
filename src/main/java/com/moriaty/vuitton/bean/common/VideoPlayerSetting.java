@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class VideoPlayerSetting {
 
-    private int group;
+    private Integer group;
 
     private boolean skipOpEd;
 

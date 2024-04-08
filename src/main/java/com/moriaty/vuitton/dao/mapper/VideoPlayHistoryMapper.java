@@ -28,6 +28,8 @@ public interface VideoPlayHistoryMapper extends BaseMapper<VideoPlayHistory> {
             	ve.id AS episodeId,
             	ve.`index` AS episodeIndex,
             	ve.`name` AS episodeName,
+            	vph.episode_play_second AS episodePlaySecond,
+            	vph.episode_play_second_str AS episodePlaySecondStr,
             	vph.play_time AS playTime
             FROM
             	video_play_history vph

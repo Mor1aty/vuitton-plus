@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class NovelNetworkChapter {
 
-    private int index;
+    private Integer index;
 
     private String title;
 

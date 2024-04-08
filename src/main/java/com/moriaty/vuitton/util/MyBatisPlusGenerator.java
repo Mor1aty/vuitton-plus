@@ -37,11 +37,11 @@ public class MyBatisPlusGenerator {
                         .parent("com.moriaty.vuitton.dao")
                         .entity("model"))
                 .templateConfig(builder -> builder
-                        .disable(TemplateType.XML, TemplateType.SERVICE,
+                        .disable(TemplateType.XML, TemplateType.MAPPER, TemplateType.SERVICE,
                                 TemplateType.SERVICE_IMPL, TemplateType.CONTROLLER))
-                .strategyConfig(builder -> builder.addInclude("")
+                .strategyConfig(builder -> builder.addInclude("video_play_history")
                         .entityBuilder().enableLombok().enableChainModel()
-                        .disableSerialVersionUID())
+                        .enableFileOverride().disableSerialVersionUID())
                 .execute();
     }
 }

@@ -3,7 +3,9 @@ package com.moriaty.vuitton.dao.model;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.time.LocalDateTime;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -14,7 +16,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author Moriaty
- * @since 2024-04-08 17:58:39
+ * @since 2024-04-08 22:11:52
  */
 @Getter
 @Setter
@@ -28,6 +30,10 @@ public class VideoPlayHistory {
     private Integer video;
 
     private Integer episode;
+
+    private Integer episodePlaySecond;
+
+    private String episodePlaySecondStr;
 
     private LocalDateTime playTime;
 }

@@ -1,5 +1,6 @@
 package com.moriaty.vuitton.constant;
 
+import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
@@ -16,6 +17,8 @@ public class Constant {
     private Constant() {
 
     }
+
+    public static final String SERVER_NAME = "vuitton-plus";
 
     public static class Date {
 
@@ -71,6 +74,18 @@ public class Constant {
             public static final String AUTO_PLAY_NEXT = "auto_play_next";
 
         }
+
+    }
+
+    public static class Video {
+
+        private Video() {
+
+        }
+
+        public static final String REDIS_PREFIX_PLAY_HISTORY = SERVER_NAME + ":play-history:";
+
+        public static final Duration REDIS_TTL_PLAY_HISTORY = Duration.ofDays(1L);
 
     }
 
