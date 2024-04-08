@@ -21,22 +21,22 @@ public class ActuatorManager {
 
     }
 
-    private static final ExecutorService executor = new ThreadPoolExecutor(10, Integer.MAX_VALUE,
+    private static final ExecutorService EXECUTOR = new ThreadPoolExecutor(10, Integer.MAX_VALUE,
             TimeUnit.SECONDS.toNanos(60L), TimeUnit.NANOSECONDS,
             new SynchronousQueue<>(false),
             Executors.defaultThreadFactory(),
             new ThreadPoolExecutor.AbortPolicy());
 
-    private static final Map<String, Actuator> runningActuatorMap = new HashMap<>();
+    private static final Map<String, Actuator> RUNNING_ACTUATOR_MAP = new HashMap<>();
 
     public static void runActuator(Actuator actuator) {
-        executor.execute(() -> {
+        EXECUTOR.execute(() -> {
             try {
                 if (!actuator.isInit()) {
                     actuator.init();
                 }
-                runningActuatorMap.put(actuator.getMeta().getId(), actuator);
-                Future<?> future = executor.submit(actuator::run);
+                RUNNING_ACTUATOR_MAP.put(actuator.getMeta().getId(), actuator);
+                Future<?> future = EXECUTOR.submit(actuator::run);
                 future.get(actuator.getMeta().getTimeoutSecond(), TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -46,16 +46,16 @@ public class ActuatorManager {
             } catch (TimeoutException e) {
                 log.error("{} 执行超时", actuator.getMark());
             }
-            runningActuatorMap.remove(actuator.getMeta().getId());
+            RUNNING_ACTUATOR_MAP.remove(actuator.getMeta().getId());
         });
     }
 
     public static Map<String, Actuator> snapshotRunningActuator() {
-        return new HashMap<>(runningActuatorMap);
+        return new HashMap<>(RUNNING_ACTUATOR_MAP);
     }
 
     public static Actuator getRunningActuator(String id) {
-        return runningActuatorMap.get(id);
+        return RUNNING_ACTUATOR_MAP.get(id);
     }
 
 }

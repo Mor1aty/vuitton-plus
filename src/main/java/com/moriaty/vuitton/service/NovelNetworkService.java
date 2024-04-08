@@ -11,6 +11,7 @@ import com.moriaty.vuitton.bean.novel.network.req.*;
 import com.moriaty.vuitton.bean.novel.network.resp.ActuatorSnapshotInfo;
 import com.moriaty.vuitton.bean.novel.network.resp.ActuatorSnapshotInfos;
 import com.moriaty.vuitton.bean.novel.network.resp.FixDownloadResp;
+import com.moriaty.vuitton.constant.Constant;
 import com.moriaty.vuitton.dao.mapper.ActuatorMapper;
 import com.moriaty.vuitton.dao.mapper.NovelChapterMapper;
 import com.moriaty.vuitton.dao.mapper.NovelMapper;
@@ -27,9 +28,11 @@ import com.moriaty.vuitton.module.novel.actuator.NovelDownloadActuator;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
 import com.moriaty.vuitton.util.FileServerUtil;
 import com.moriaty.vuitton.util.NovelUtil;
+import com.moriaty.vuitton.util.UuidUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -66,6 +69,8 @@ public class NovelNetworkService {
     private final NovelChapterMapper novelChapterMapper;
 
     private final ActuatorMapper actuatorMapper;
+
+    private final StringRedisTemplate stringRedisTemplate;
 
     public Wrapper<NovelNetworkCatalogue> findCatalogue(FindCatalogueReq req) {
         NovelDownloader novelDownloader = NovelUtil.findNovelDownloader(req.getDownloaderMark());
@@ -196,8 +201,8 @@ public class NovelNetworkService {
         if (novelDownloader == null) {
             return WrapMapper.failure("小说下载器不存在");
         }
-        NovelDownloadActuator actuator = new NovelDownloadActuator(
-                req.getName(), req.getCatalogueUrl(), novelDownloader,
+        NovelDownloadActuator actuator = new NovelDownloadActuator("Actuator-Novel-Download-" + UuidUtil.genId(),
+                req.getName(), req.getCatalogueUrl(), req.isParallel(), novelDownloader,
                 (novel, chapterList) -> {
                     int effectRow = novelMapper.insert(novel);
                     if (effectRow != 1) {

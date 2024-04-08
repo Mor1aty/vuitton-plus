@@ -1,6 +1,7 @@
 package com.moriaty.vuitton.module.novel.actuator;
 
 import com.alibaba.fastjson2.TypeReference;
+import com.moriaty.vuitton.constant.Constant;
 import com.moriaty.vuitton.dao.model.Novel;
 import com.moriaty.vuitton.dao.model.NovelChapter;
 import com.moriaty.vuitton.library.actuator.Actuator;
@@ -31,9 +32,13 @@ import java.util.function.BiPredicate;
 @Slf4j
 public class NovelDownloadActuator extends Actuator {
 
+    private final String id;
+
     private final String novelName;
 
     private final String novelCatalogueUrl;
+
+    private final boolean parallel;
 
     private final NovelDownloaderMeta novelDownloaderMeta;
 
@@ -41,22 +46,26 @@ public class NovelDownloadActuator extends Actuator {
 
     private final BiConsumer<ActuatorSnapshot, Map<String, Map<String, Object>>> beforeEndStrategy;
 
-    public NovelDownloadActuator(String novelName, String novelCatalogueUrl, NovelDownloader novelDownloader,
+    public NovelDownloadActuator(String id, String novelName, String novelCatalogueUrl, boolean parallel,
+                                 NovelDownloader novelDownloader,
                                  BiPredicate<Novel, List<NovelChapter>> storageStepStrategy,
                                  BiConsumer<ActuatorSnapshot, Map<String, Map<String, Object>>> beforeEndStrategy) {
+        this.id = id;
         this.novelName = novelName;
         this.novelCatalogueUrl = novelCatalogueUrl;
+        this.parallel = parallel;
         this.novelDownloaderMeta = novelDownloader.getMeta();
         this.storageStepStrategy = storageStepStrategy;
         this.beforeEndStrategy = beforeEndStrategy;
         initStepData(Map.of("novelName", novelName, "novelCatalogueUrl", novelCatalogueUrl,
-                "novelDownloader", novelDownloader));
+                "parallel", parallel, "novelDownloader", novelDownloader,
+                "redisTtl", Constant.Actuator.REDIS_TTL_ACTUATOR_NOVEL_DOWNLOAD));
         super.init();
     }
 
     @Override
     protected ActuatorMeta initMeta() {
-        return new NovelDownloadActuatorMeta("小说下载器", this.novelName,
+        return new NovelDownloadActuatorMeta(id, "小说下载器", this.novelName, this.parallel,
                 this.novelCatalogueUrl, this.novelDownloaderMeta);
     }
 

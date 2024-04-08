@@ -29,11 +29,20 @@ public class ActuatorMeta {
 
     private boolean stepFailContinue;
 
-    public ActuatorMeta(String name, int timeoutSecond, int stepSleepSecond, boolean stepFailContinue) {
+    public ActuatorMeta(String id, String name, int timeoutSecond, int stepSleepSecond, boolean stepFailContinue) {
+        this.id = id;
         this.name = name;
         this.timeoutSecond = timeoutSecond;
         this.stepSleepSecond = stepSleepSecond;
         this.stepFailContinue = stepFailContinue;
+    }
+
+    public ActuatorMeta(String id, String name) {
+        this.id = id;
+        this.name = name;
+        this.timeoutSecond = 30 * 60;
+        this.stepSleepSecond = 5;
+        this.stepFailContinue = false;
     }
 
 }

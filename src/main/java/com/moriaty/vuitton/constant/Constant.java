@@ -89,4 +89,17 @@ public class Constant {
 
     }
 
+    public static class Actuator {
+
+        private Actuator() {
+
+        }
+
+        public static final String REDIS_PREFIX_ACTUATOR = SERVER_NAME + ":actuator:";
+
+        public static final String REDIS_PREFIX_ACTUATOR_NOVEL_DOWNLOAD = REDIS_PREFIX_ACTUATOR + "novel-download:";
+
+        public static final Duration REDIS_TTL_ACTUATOR_NOVEL_DOWNLOAD = Duration.ofHours(2L);
+    }
+
 }

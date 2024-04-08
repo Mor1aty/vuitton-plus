@@ -3,7 +3,14 @@ package com.moriaty.vuitton.library.actuator.step;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
-
+/**
+ * <p>
+ * 重复步骤
+ * </p>
+ *
+ * @author Moriaty
+ * @since 2024/4/9 上午2:11
+ */
 @Slf4j
 public abstract class RepeatStep extends Step {
 

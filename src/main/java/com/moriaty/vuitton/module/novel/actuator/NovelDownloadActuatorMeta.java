@@ -19,13 +19,16 @@ public class NovelDownloadActuatorMeta extends ActuatorMeta {
 
     private final String novelCatalogueUrl;
 
+    private final boolean parallel;
+
     private final NovelDownloaderMeta novelDownloaderMeta;
 
-    public NovelDownloadActuatorMeta(String name, String novelName,
+    public NovelDownloadActuatorMeta(String id, String name, String novelName, boolean parallel,
                                      String novelCatalogueUrl, NovelDownloaderMeta novelDownloaderMeta) {
-        super(name, 30 * 60, 5, false);
+        super(id, name);
         this.novelName = novelName;
         this.novelCatalogueUrl = novelCatalogueUrl;
+        this.parallel = parallel;
         this.novelDownloaderMeta = novelDownloaderMeta;
     }
 }

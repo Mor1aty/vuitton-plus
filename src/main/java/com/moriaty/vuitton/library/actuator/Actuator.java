@@ -54,9 +54,11 @@ public abstract class Actuator {
             return;
         }
         meta = initMeta();
-        meta.setId("Actuator-" + UuidUtil.genId());
+        if (!StringUtils.hasText(meta.getId())) {
+            meta.setId("Actuator-" + UuidUtil.genId());
+        }
         if (!StringUtils.hasText(meta.getName())) {
-            meta.setName("未命名");
+            meta.setName("默认执行器");
         }
         if (meta.getTimeoutSecond() <= 0) {
             meta.setTimeoutSecond(5 * 60);

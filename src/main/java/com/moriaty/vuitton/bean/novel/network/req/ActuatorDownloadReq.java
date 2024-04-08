@@ -23,4 +23,6 @@ public class ActuatorDownloadReq {
     @NotBlank(message = "catalogueUrl 不能为空")
     private String catalogueUrl;
 
+    private boolean parallel;
+
 }

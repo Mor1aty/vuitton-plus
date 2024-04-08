@@ -137,7 +137,7 @@ public abstract class NovelDownloader {
     public NovelNetworkDownloadResult serialDownload(String name, String catalogueUrl) {
         NovelNetworkDownloadResult result = writeInfo(name, catalogueUrl);
         if (result == null) {
-            log.error("下载小说 {} 失败", name);
+            log.error("串行下载小说 {} 失败", name);
             return null;
         }
         List<NovelNetworkChapter> chapterList = findChapterList(catalogueUrl);
@@ -149,7 +149,7 @@ public abstract class NovelDownloader {
     public NovelNetworkDownloadResult parallelDownload(String name, String catalogueUrl) {
         NovelNetworkDownloadResult result = writeInfo(name, catalogueUrl);
         if (result == null) {
-            log.error("下载小说 {} 失败", name);
+            log.error("并行下载小说 {} 失败", name);
             return null;
         }
         try {
