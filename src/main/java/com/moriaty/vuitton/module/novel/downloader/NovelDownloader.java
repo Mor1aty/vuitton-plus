@@ -1,14 +1,12 @@
 package com.moriaty.vuitton.module.novel.downloader;
 
 import com.moriaty.vuitton.bean.novel.network.*;
-import com.moriaty.vuitton.constant.Constant;
 import com.moriaty.vuitton.dao.model.Novel;
 import com.moriaty.vuitton.dao.model.NovelChapter;
 import com.moriaty.vuitton.util.NovelUtil;
 import com.moriaty.vuitton.util.RandomUtil;
 import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -41,9 +39,11 @@ public abstract class NovelDownloader {
 
     public abstract NovelNetworkContent findContent(String title, String contentUrl);
 
-    public abstract boolean skipContent(String content);
-
     public abstract String removeAbnormalContent(String content);
+
+    protected boolean skipContent(String content) {
+        return !StringUtils.hasText(content);
+    }
 
     protected List<NovelNetworkChapter> exploreChapterList(Elements domList, @Nonnull String contentPrefix) {
         List<NovelNetworkChapter> chapterList = new ArrayList<>();
@@ -62,36 +62,26 @@ public abstract class NovelDownloader {
         return chapterList;
     }
 
-    protected NovelNetworkContent exploreContent(String title, String contentUrl, String contentDomId) {
+    protected NovelNetworkContent exploreContent(String title, Document doc, String contentDomId) {
         try {
             Thread.sleep(Duration.ofSeconds(RandomUtil.randomInt(0, 2)));
         } catch (InterruptedException e) {
             log.error("休眠被打断", e);
             Thread.currentThread().interrupt();
         }
-        try {
-            Document doc = Jsoup.connect(contentUrl)
-                    .timeout(Constant.Network.CONNECT_TIMEOUT)
-                    .headers(Constant.Network.CHROME_HEADERS)
-                    .ignoreHttpErrors(true)
-                    .get();
-            Element content = doc.getElementById(contentDomId);
-            if (content == null) {
-                return new NovelNetworkContent()
-                        .setErrorMsg("正文不存在");
-            }
-            if (skipContent(content.text())) {
-                return new NovelNetworkContent()
-                        .setErrorMsg("本章未更新");
-            }
+        Element content = doc.getElementById(contentDomId);
+        if (content == null) {
             return new NovelNetworkContent()
-                    .setTitle(title)
-                    .setContent(removeAbnormalContent(content.text()))
-                    .setContentHtml(removeAbnormalContent(content.html()));
-        } catch (IOException e) {
-            return new NovelNetworkContent()
-                    .setErrorMsg("获取小说内容发生异常, " + e.getLocalizedMessage());
+                    .setErrorMsg("正文不存在");
         }
+        if (skipContent(content.text())) {
+            return new NovelNetworkContent()
+                    .setErrorMsg("本章未更新");
+        }
+        return new NovelNetworkContent()
+                .setTitle(title)
+                .setContent(removeAbnormalContent(content.text()))
+                .setContentHtml(removeAbnormalContent(content.html()));
     }
 
     private NovelNetworkDownloadResult writeInfo(String name, String catalogueUrl) {

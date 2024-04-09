@@ -8,6 +8,7 @@ import com.moriaty.vuitton.library.actuator.step.Step;
 import com.moriaty.vuitton.library.actuator.step.StepMeta;
 import com.moriaty.vuitton.util.NovelUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.util.List;
@@ -51,13 +52,18 @@ public class StorageStep extends Step {
             log.error("写入小说文件失败");
             return false;
         }
-        String imgFileUrl = NovelUtil.uploadImg(ServerInfo.INFO.getFileServerUploadUrl(),
-                novel.getImgUrl(), novel.getName());
-        if (imgFileUrl == null) {
-            log.error("上传小说图片失败, 将使用默认图片");
-            imgFileUrl = super.getStepData("defaultNovelImg", new TypeReference<>() {
-            });
+        String imgFileUrl = super.getStepData("defaultNovelImg", new TypeReference<>() {
+        });
+        if (StringUtils.hasText(novel.getImgUrl())) {
+            String uploadImgUrl = NovelUtil.uploadImg(ServerInfo.INFO.getFileServerUploadUrl(),
+                    novel.getImgUrl(), novel.getName());
+            if (uploadImgUrl == null) {
+                log.error("上传小说图片失败, 将使用默认图片");
+            } else {
+                imgFileUrl = uploadImgUrl;
+            }
         }
+
         String fileUrl = NovelUtil.upload(ServerInfo.INFO.getFileServerUploadUrl(),
                 file, novel.getName() + ".txt");
         if (fileUrl == null) {

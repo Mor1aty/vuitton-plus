@@ -27,5 +27,7 @@ public class NovelDownloaderMeta {
 
     private String mark;
 
+    private String charset;
+
     private Boolean disable;
 }

@@ -6,6 +6,7 @@ import com.moriaty.vuitton.bean.novel.network.NovelNetworkInfo;
 import com.moriaty.vuitton.constant.Constant;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderMeta;
+import com.moriaty.vuitton.util.NovelUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -113,12 +114,13 @@ public class TwoBiQuNovelDownloader extends NovelDownloader {
 
     @Override
     public NovelNetworkContent findContent(String title, String contentUrl) {
-        return exploreContent(title, meta.getContentBaseUrl() + contentUrl, "content");
-    }
-
-    @Override
-    public boolean skipContent(String content) {
-        return false;
+        try {
+            Document doc = NovelUtil.findDoc(meta.getContentBaseUrl() + contentUrl);
+            return exploreContent(title, doc, "content");
+        } catch (IOException e) {
+            return new NovelNetworkContent()
+                    .setErrorMsg("获取小说内容发生异常, " + e.getLocalizedMessage());
+        }
     }
 
     @Override
