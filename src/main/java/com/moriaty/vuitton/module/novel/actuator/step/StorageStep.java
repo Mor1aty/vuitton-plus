@@ -54,8 +54,9 @@ public class StorageStep extends Step {
         String imgFileUrl = NovelUtil.uploadImg(ServerInfo.INFO.getFileServerUploadUrl(),
                 novel.getImgUrl(), novel.getName());
         if (imgFileUrl == null) {
-            log.error("上传小说图片失败");
-            return false;
+            log.error("上传小说图片失败, 将使用默认图片");
+            imgFileUrl = super.getStepData("defaultNovelImg", new TypeReference<>() {
+            });
         }
         String fileUrl = NovelUtil.upload(ServerInfo.INFO.getFileServerUploadUrl(),
                 file, novel.getName() + ".txt");

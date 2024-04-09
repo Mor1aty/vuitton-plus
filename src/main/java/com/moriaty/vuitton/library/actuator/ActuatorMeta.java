@@ -21,6 +21,8 @@ public class ActuatorMeta {
 
     private String name;
 
+    private String stepDataPlugin;
+
     private int timeoutSecond;
 
     private int stepSleepSecond;

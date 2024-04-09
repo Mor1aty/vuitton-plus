@@ -78,7 +78,12 @@ public class TwoBiQuNovelDownloader extends NovelDownloader {
             if (domImg.isEmpty()) {
                 return null;
             }
-            info.setImgUrl(domImg.attr("src"));
+            String imgSrc = domImg.attr("src");
+            if (imgSrc.startsWith("http")) {
+                info.setImgUrl(domImg.attr("src"));
+            } else {
+                info.setImgUrl(meta.getWebsite() + domImg.attr("src"));
+            }
             return info;
         } catch (IOException e) {
             log.error("获取信息异常", e);

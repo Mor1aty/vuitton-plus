@@ -1,6 +1,8 @@
 package com.moriaty.vuitton.library.actuator;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.moriaty.vuitton.library.actuator.plugin.MemoryStepDataPlugin;
+import com.moriaty.vuitton.library.actuator.plugin.StepDataPlugin;
 import com.moriaty.vuitton.library.actuator.step.Step;
 import com.moriaty.vuitton.util.UuidUtil;
 import lombok.Getter;
@@ -43,7 +45,7 @@ public abstract class Actuator {
 
     private String lastStepDataKey = null;
 
-    protected final Map<String, JSONObject> stepDataMap = new HashMap<>();
+    protected StepDataPlugin stepDataPlugin;
 
     protected abstract ActuatorMeta initMeta();
 
@@ -66,19 +68,26 @@ public abstract class Actuator {
         if (meta.getStepSleepSecond() < 0) {
             meta.setStepSleepSecond(10);
         }
+        stepDataPlugin = loadStepDataPlugin();
+        meta.setStepDataPlugin(stepDataPlugin.getName());
         mark = "执行器 " + meta.getName() + "[" + meta.getId() + "]";
         stepList = initStep();
         progress = new ActuatorStepProgress().setTotalStep(stepList.size());
+        stepDataPlugin.storeMetaData(meta);
         init = true;
     }
 
     protected void initStepData(Map<String, Object> stepData) {
         lastStepDataKey = "0-init";
-        stepDataMap.put("0-init", new JSONObject(stepData));
+        stepDataPlugin.storeStepData("0-init", new JSONObject(stepData));
+    }
+
+    protected StepDataPlugin loadStepDataPlugin() {
+        return new MemoryStepDataPlugin();
     }
 
     public Map<String, Map<String, Object>> snapshotStepData() {
-        HashMap<String, Map<String, Object>> snapshot = new HashMap<>(stepDataMap);
+        Map<String, Map<String, Object>> snapshot = new HashMap<>(stepDataPlugin.snapshotStepData());
         snapshot.put(progress.getCurrentStepIndex() + "-" + currentStep.getMeta().getName(),
                 currentStep.snapshotStepData());
         return snapshot;
@@ -120,7 +129,7 @@ public abstract class Actuator {
                 stepIndex = i + 1;
                 Step step = stepList.get(i);
                 if (lastStepDataKey != null) {
-                    step.importStepData(stepDataMap.get(lastStepDataKey));
+                    step.importStepData(stepDataPlugin.getStepData(lastStepDataKey));
                 }
                 currentStep = step;
                 progress.setCurrentStepIndex(stepIndex)
@@ -129,12 +138,13 @@ public abstract class Actuator {
                         progress.getCurrentStepIndex(), progress.getTotalStep());
                 boolean success = step.run();
                 lastStepDataKey = stepIndex + "-" + step.getMeta().getName();
-                stepDataMap.put(lastStepDataKey, step.exportStepData());
+                stepDataPlugin.storeStepData(lastStepDataKey, step.exportStepData());
                 if (handleRunResult(success)) {
                     break;
                 }
             }
         } finally {
+            stepDataPlugin.clearStepData();
             beforeEnd();
         }
     }

@@ -10,8 +10,10 @@ import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * <p>
@@ -23,6 +25,12 @@ import java.util.List;
  */
 @Slf4j
 public class DownloadStep extends Step {
+
+    private final NovelDownloader novelDownloader;
+
+    public DownloadStep(NovelDownloader novelDownloader) {
+        this.novelDownloader = novelDownloader;
+    }
 
     @Override
     protected StepMeta initMeta() {
@@ -47,7 +55,7 @@ public class DownloadStep extends Step {
         });
         String novelCatalogueUrl = super.getStepData("novelCatalogueUrl", new TypeReference<>() {
         });
-        NovelDownloader novelDownloader = super.getStepData("novelDownloader", new TypeReference<>() {
+        Boolean parallel = super.getStepData("parallel", new TypeReference<>() {
         });
         NovelNetworkInfo info = novelDownloader.findInfo(novelCatalogueUrl);
         if (info == null) {
@@ -68,6 +76,21 @@ public class DownloadStep extends Step {
             return false;
         }
         super.putStepData("totalChapterNum", chapterList.size());
+        List<NovelChapter> downloadChapterList;
+        if (Boolean.TRUE.equals(parallel)) {
+            // 并行下载
+            downloadChapterList = parallelDownload(novelDownloader, chapterList);
+        } else {
+            // 串行下载
+            downloadChapterList = serialDownload(novelDownloader, chapterList);
+        }
+        super.putStepData("chapterList", downloadChapterList);
+        log.info("小说 {} 下载成功, 章节数: {}, 成功章节数: {}", novel.getName(),
+                chapterList.size(), downloadChapterList.size());
+        return true;
+    }
+
+    private List<NovelChapter> serialDownload(NovelDownloader novelDownloader, List<NovelNetworkChapter> chapterList) {
         List<NovelChapter> downloadChapterList = new ArrayList<>();
         for (NovelNetworkChapter chapter : chapterList) {
             if (super.isInterrupt()) {
@@ -78,7 +101,7 @@ public class DownloadStep extends Step {
                     chapter.getContentUrl());
             super.putStepData("currentChapterIndex", chapter.getIndex());
             if (content != null && !StringUtils.hasText(content.getErrorMsg())) {
-                log.info("{} 获取 {} {}", novelDownloader.getMeta().getMark(), chapter.getIndex(), chapter.getTitle());
+                log.info("{} 串行下载 {} {}", novelDownloader.getMeta().getMark(), chapter.getIndex(), chapter.getTitle());
                 downloadChapterList.add(new NovelChapter()
                         .setIndex(chapter.getIndex())
                         .setTitle(content.getTitle())
@@ -86,9 +109,49 @@ public class DownloadStep extends Step {
                         .setContentHtml(content.getContentHtml()));
             }
         }
-        super.putStepData("chapterList", downloadChapterList);
-        log.info("小说 {} 下载成功, 章节数: {}, 成功章节数: {}", novel.getName(),
-                chapterList.size(), downloadChapterList.size());
-        return true;
+        return downloadChapterList;
+    }
+
+    private List<NovelChapter> parallelDownload(NovelDownloader novelDownloader, List<NovelNetworkChapter> chapterList) {
+        List<NovelChapter> downloadChapterList = new ArrayList<>();
+        Map<Integer, NovelNetworkContent> contentMap = new TreeMap<>();
+        try {
+            ThreadFactory factory = Thread.ofVirtual().name("actuator-novel-downloader", 0).factory();
+            CountDownLatch countDownLatch = new CountDownLatch(chapterList.size());
+            log.info("共 {} 章, 开启虚拟线程: {}", chapterList.size(), countDownLatch.getCount());
+            for (int i = 0; i < chapterList.size(); i++) {
+                int index = i;
+                int sleepSecond = i % 10;
+                factory.newThread(() -> {
+                    try {
+                        Thread.sleep(Duration.ofSeconds(sleepSecond));
+                    } catch (InterruptedException e) {
+                        log.error("sleep is interrupted", e);
+                        Thread.currentThread().interrupt();
+                    }
+                    NovelNetworkChapter chapter = chapterList.get(index);
+                    NovelNetworkContent content = novelDownloader.findContent(chapter.getTitle(), chapter.getContentUrl());
+
+                    if (content != null && !StringUtils.hasText(content.getErrorMsg())) {
+                        log.info("{} 并行下载 {} {}", novelDownloader.getMeta().getMark(), chapter.getIndex(), chapter.getTitle());
+                        contentMap.put(chapter.getIndex(), content);
+                    }
+                    countDownLatch.countDown();
+                }).start();
+            }
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            log.error("下载小说被打断", e);
+            Thread.currentThread().interrupt();
+        }
+        log.info("共下载章节: {}", contentMap.size());
+        if (!contentMap.isEmpty()) {
+            contentMap.forEach((chapterIndex, content) -> downloadChapterList.add(new NovelChapter()
+                    .setIndex(chapterIndex)
+                    .setTitle(content.getTitle())
+                    .setContent(content.getContent())
+                    .setContentHtml(content.getContentHtml())));
+        }
+        return downloadChapterList;
     }
 }

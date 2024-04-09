@@ -1,7 +1,6 @@
 package com.moriaty.vuitton.service;
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moriaty.vuitton.ServerInfo;
@@ -29,9 +28,10 @@ import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
 import com.moriaty.vuitton.util.FileServerUtil;
 import com.moriaty.vuitton.util.NovelUtil;
 import com.moriaty.vuitton.util.UuidUtil;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -54,7 +54,7 @@ import java.util.Optional;
  * @since 2024/1/28 下午12:24
  */
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class NovelNetworkService {
 
@@ -71,6 +71,9 @@ public class NovelNetworkService {
     private final ActuatorMapper actuatorMapper;
 
     private final StringRedisTemplate stringRedisTemplate;
+
+    @Value("${file-server.novel.default-novel-img}")
+    private String defaultNovelImg;
 
     public Wrapper<NovelNetworkCatalogue> findCatalogue(FindCatalogueReq req) {
         NovelDownloader novelDownloader = NovelUtil.findNovelDownloader(req.getDownloaderMark());
@@ -201,8 +204,11 @@ public class NovelNetworkService {
         if (novelDownloader == null) {
             return WrapMapper.failure("小说下载器不存在");
         }
-        NovelDownloadActuator actuator = new NovelDownloadActuator("Actuator-Novel-Download-" + UuidUtil.genId(),
-                req.getName(), req.getCatalogueUrl(), req.isParallel(), novelDownloader,
+        String actuatorId = "Actuator-Novel-Download-" + UuidUtil.genId();
+        NovelDownloadActuator actuator = new NovelDownloadActuator(actuatorId, req.getName(), req.getCatalogueUrl(),
+                req.isParallel(), stringRedisTemplate,
+                Constant.Actuator.REDIS_PREFIX_ACTUATOR_NOVEL_DOWNLOAD + actuatorId + ":",
+                Constant.Actuator.REDIS_TTL_ACTUATOR_NOVEL_DOWNLOAD, novelDownloader, defaultNovelImg,
                 (novel, chapterList) -> {
                     int effectRow = novelMapper.insert(novel);
                     if (effectRow != 1) {

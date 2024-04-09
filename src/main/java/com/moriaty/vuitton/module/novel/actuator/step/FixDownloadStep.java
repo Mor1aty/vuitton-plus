@@ -25,7 +25,11 @@ public class FixDownloadStep extends RepeatStep {
 
     private Novel novel;
 
-    private NovelDownloader novelDownloader;
+    private final NovelDownloader novelDownloader;
+
+    public FixDownloadStep(NovelDownloader novelDownloader) {
+        this.novelDownloader = novelDownloader;
+    }
 
     @Override
     protected StepMeta initMeta() {
@@ -88,8 +92,6 @@ public class FixDownloadStep extends RepeatStep {
     @Override
     protected void beforeRun() {
         novel = super.getStepData("novel", new TypeReference<>() {
-        });
-        novelDownloader = super.getStepData("novelDownloader", new TypeReference<>() {
         });
     }
 }
