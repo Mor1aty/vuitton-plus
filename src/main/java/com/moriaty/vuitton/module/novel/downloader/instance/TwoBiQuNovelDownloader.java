@@ -4,7 +4,7 @@ import com.moriaty.vuitton.bean.novel.network.NovelNetworkChapter;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkContent;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkInfo;
 import com.moriaty.vuitton.constant.Constant;
-import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
+import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderMeta;
 import com.moriaty.vuitton.util.NovelUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import java.util.List;
  */
 @Component
 @Slf4j
-public class TwoBiQuNovelDownloader extends NovelDownloader {
+public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
 
     private final NovelDownloaderMeta meta = new NovelDownloaderMeta()
             .setWebName("2笔趣")
@@ -80,7 +80,7 @@ public class TwoBiQuNovelDownloader extends NovelDownloader {
                 return null;
             }
             String imgSrc = domImg.attr("src");
-            if (imgSrc.startsWith("http")) {
+            if (imgSrc.startsWith(Constant.Network.HTTP)) {
                 info.setImgUrl(domImg.attr("src"));
             } else {
                 info.setImgUrl(meta.getWebsite() + domImg.attr("src"));

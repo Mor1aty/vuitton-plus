@@ -67,7 +67,7 @@ public class RedisStepDataPlugin implements StepDataPlugin {
 
     @Override
     public Map<String, JSONObject> snapshotStepData() {
-        Map<String, JSONObject> snapshot = new HashMap<>();
+        Map<String, JSONObject> snapshot = HashMap.newHashMap(redisKeyList.size());
         List<String> jsonList = stringRedisTemplate.opsForValue().multiGet(redisKeyList);
         if (jsonList != null) {
             jsonList.forEach(json -> {

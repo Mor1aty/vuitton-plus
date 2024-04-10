@@ -4,9 +4,9 @@ import com.alibaba.fastjson2.TypeReference;
 import com.moriaty.vuitton.bean.novel.network.*;
 import com.moriaty.vuitton.dao.model.Novel;
 import com.moriaty.vuitton.dao.model.NovelChapter;
-import com.moriaty.vuitton.library.actuator.step.Step;
+import com.moriaty.vuitton.library.actuator.step.BaseStep;
 import com.moriaty.vuitton.library.actuator.step.StepMeta;
-import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
+import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
@@ -24,11 +24,11 @@ import java.util.concurrent.ThreadFactory;
  * @since 2024/1/29 下午5:45
  */
 @Slf4j
-public class DownloadStep extends Step {
+public class DownloadStep extends BaseStep {
 
-    private final NovelDownloader novelDownloader;
+    private final BaseNovelDownloader novelDownloader;
 
-    public DownloadStep(NovelDownloader novelDownloader) {
+    public DownloadStep(BaseNovelDownloader novelDownloader) {
         this.novelDownloader = novelDownloader;
     }
 
@@ -90,7 +90,7 @@ public class DownloadStep extends Step {
         return true;
     }
 
-    private List<NovelChapter> serialDownload(NovelDownloader novelDownloader, List<NovelNetworkChapter> chapterList) {
+    private List<NovelChapter> serialDownload(BaseNovelDownloader novelDownloader, List<NovelNetworkChapter> chapterList) {
         List<NovelChapter> downloadChapterList = new ArrayList<>();
         for (NovelNetworkChapter chapter : chapterList) {
             if (super.isInterrupt()) {
@@ -112,7 +112,7 @@ public class DownloadStep extends Step {
         return downloadChapterList;
     }
 
-    private List<NovelChapter> parallelDownload(NovelDownloader novelDownloader, List<NovelNetworkChapter> chapterList) {
+    private List<NovelChapter> parallelDownload(BaseNovelDownloader novelDownloader, List<NovelNetworkChapter> chapterList) {
         List<NovelChapter> downloadChapterList = new ArrayList<>();
         Map<Integer, NovelNetworkContent> contentMap = new TreeMap<>();
         try {

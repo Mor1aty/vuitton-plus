@@ -19,21 +19,21 @@ public class NovelDownloaderFactory {
 
     }
 
-    private static final Map<String, NovelDownloader> FACTORY_DOWNLOADER_MAP = new HashMap<>();
+    private static final Map<String, BaseNovelDownloader> FACTORY_DOWNLOADER_MAP = new HashMap<>();
 
     private static final Map<String, NovelDownloaderMeta> FACTORY_DOWNLOADER_INFO_MAP = new HashMap<>();
 
-    public static void putDownloaderMap(String mark, NovelDownloader novelDownloader) {
+    public static void putDownloaderMap(String mark, BaseNovelDownloader novelDownloader) {
         FACTORY_DOWNLOADER_MAP.put(mark, novelDownloader);
         FACTORY_DOWNLOADER_INFO_MAP.put(mark, novelDownloader.getMeta());
     }
 
-    public static void putDownloaderMap(Map<String, NovelDownloader> novelDownloaderMap) {
+    public static void putDownloaderMap(Map<String, BaseNovelDownloader> novelDownloaderMap) {
         FACTORY_DOWNLOADER_MAP.putAll(novelDownloaderMap);
         novelDownloaderMap.forEach((mark, downloader) -> FACTORY_DOWNLOADER_INFO_MAP.put(mark, downloader.getMeta()));
     }
 
-    public static NovelDownloader getDownloader(String mark) {
+    public static BaseNovelDownloader getDownloader(String mark) {
         return FACTORY_DOWNLOADER_MAP.get(mark);
     }
 
@@ -41,7 +41,7 @@ public class NovelDownloaderFactory {
         return FACTORY_DOWNLOADER_INFO_MAP.get(mark);
     }
 
-    public static List<NovelDownloader> getAllDownloader() {
+    public static List<BaseNovelDownloader> getAllDownloader() {
         return new ArrayList<>(FACTORY_DOWNLOADER_MAP.values());
     }
 

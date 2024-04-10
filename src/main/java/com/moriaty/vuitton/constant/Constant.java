@@ -52,7 +52,10 @@ public class Constant {
                 "sec-ch-ua-mobile", "?0",
                 "sec-ch-ua-platform", "\"Linux\""
         );
+
         public static final int RESPONSE_SUCCESS_CODE = 200;
+
+        public static final String HTTP = "http";
     }
 
     public static class Setting {

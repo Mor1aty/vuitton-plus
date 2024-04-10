@@ -3,6 +3,7 @@ package com.moriaty.vuitton.library.actuator.step;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
+
 /**
  * <p>
  * 重复步骤
@@ -12,18 +13,34 @@ import java.time.Duration;
  * @since 2024/4/9 上午2:11
  */
 @Slf4j
-public abstract class RepeatStep extends Step {
+public abstract class BaseRepeatStep extends BaseStep {
 
     private int repeatNum = 0;
 
     private int repeatSleepSecond;
 
+    /**
+     * 是否停止重复
+     *
+     * @return boolean
+     */
     protected abstract boolean isStopRepeat();
 
+    /**
+     * 重复执行内容
+     */
     protected abstract void repeatRunContent();
 
+    /**
+     * 初始化重复休眠时间(秒)
+     *
+     * @return int
+     */
     protected abstract int initRepeatSleepSecond();
 
+    /**
+     * 开始运行之前
+     */
     protected abstract void beforeRun();
 
     @Override

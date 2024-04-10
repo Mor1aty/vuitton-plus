@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moriaty.vuitton.ServerInfo;
+import com.moriaty.vuitton.bean.WrapMapperExt;
 import com.moriaty.vuitton.bean.novel.local.NovelLocalFullInfo;
 import com.moriaty.vuitton.bean.novel.network.*;
 import com.moriaty.vuitton.bean.novel.network.req.*;
@@ -16,7 +17,7 @@ import com.moriaty.vuitton.dao.mapper.NovelChapterMapper;
 import com.moriaty.vuitton.dao.mapper.NovelMapper;
 import com.moriaty.vuitton.dao.model.Novel;
 import com.moriaty.vuitton.dao.model.NovelChapter;
-import com.moriaty.vuitton.library.actuator.Actuator;
+import com.moriaty.vuitton.library.actuator.BaseActuator;
 import com.moriaty.vuitton.library.actuator.ActuatorManager;
 import com.moriaty.vuitton.library.actuator.ActuatorMeta;
 import com.moriaty.vuitton.library.wrap.WrapMapper;
@@ -24,7 +25,8 @@ import com.moriaty.vuitton.library.wrap.Wrapper;
 import com.moriaty.vuitton.module.novel.NovelLocalModule;
 import com.moriaty.vuitton.module.novel.NovelNetworkModule;
 import com.moriaty.vuitton.module.novel.actuator.NovelDownloadActuator;
-import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
+import com.moriaty.vuitton.module.novel.actuator.NovelDownloadActuatorParam;
+import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.util.FileServerUtil;
 import com.moriaty.vuitton.util.NovelUtil;
 import com.moriaty.vuitton.util.UuidUtil;
@@ -76,9 +78,9 @@ public class NovelNetworkService {
     private String defaultNovelImg;
 
     public Wrapper<NovelNetworkCatalogue> findCatalogue(FindCatalogueReq req) {
-        NovelDownloader novelDownloader = NovelUtil.findNovelDownloader(req.getDownloaderMark());
+        BaseNovelDownloader novelDownloader = NovelUtil.findNovelDownloader(req.getDownloaderMark());
         if (novelDownloader == null) {
-            return WrapMapper.failure("小说下载器不存在");
+            return WrapMapperExt.novelDownloaderNotExisted();
         }
         Optional<NovelNetworkCatalogue> optional = novelNetworkModule.findCatalogue(novelDownloader,
                 req.getCatalogueUrl());
@@ -86,9 +88,9 @@ public class NovelNetworkService {
     }
 
     public Wrapper<NovelNetworkContent> findContent(FindContentReq req) {
-        NovelDownloader novelDownloader = NovelUtil.findNovelDownloader(req.getDownloaderMark());
+        BaseNovelDownloader novelDownloader = NovelUtil.findNovelDownloader(req.getDownloaderMark());
         if (novelDownloader == null) {
-            return WrapMapper.failure("小说下载器不存在");
+            return WrapMapperExt.novelDownloaderNotExisted();
         }
         Optional<NovelNetworkContent> optional = novelNetworkModule.
                 findContent(novelDownloader, req.getTitle(), req.getContentUrl());
@@ -97,9 +99,9 @@ public class NovelNetworkService {
 
 
     public Wrapper<String> download(DownloadReq req) {
-        NovelDownloader novelDownloader = NovelUtil.findNovelDownloader(req.getDownloaderMark());
+        BaseNovelDownloader novelDownloader = NovelUtil.findNovelDownloader(req.getDownloaderMark());
         if (novelDownloader == null) {
-            return WrapMapper.failure("小说下载器不存在");
+            return WrapMapperExt.novelDownloaderNotExisted();
         }
         Optional<NovelNetworkDownloadResult> optional = novelNetworkModule.
                 download(novelDownloader, req.getName(), req.getCatalogueUrl(), req.isParallel());
@@ -201,12 +203,12 @@ public class NovelNetworkService {
     }
 
     public Wrapper<ActuatorMeta> actuatorDownload(ActuatorDownloadReq req) {
-        NovelDownloader novelDownloader = NovelUtil.findNovelDownloader(req.getDownloaderMark());
+        BaseNovelDownloader novelDownloader = NovelUtil.findNovelDownloader(req.getDownloaderMark());
         if (novelDownloader == null) {
-            return WrapMapper.failure("小说下载器不存在");
+            return WrapMapperExt.novelDownloaderNotExisted();
         }
         String actuatorId = "Actuator-Novel-Download-" + UuidUtil.genId();
-        NovelDownloadActuator actuator = new NovelDownloadActuator(actuatorId, req.getName(), req.getCatalogueUrl(),
+        NovelDownloadActuator actuator = new NovelDownloadActuator(new NovelDownloadActuatorParam(actuatorId, req.getName(), req.getCatalogueUrl(),
                 req.isParallel(), stringRedisTemplate,
                 Constant.Actuator.REDIS_PREFIX_ACTUATOR_NOVEL_DOWNLOAD + actuatorId + ":",
                 Constant.Actuator.REDIS_TTL_ACTUATOR_NOVEL_DOWNLOAD, novelDownloader, defaultNovelImg,
@@ -241,14 +243,14 @@ public class NovelNetworkService {
                             .setInterrupt(actuatorSnapshot.isInterrupt())
                             .setStartTime(actuatorSnapshot.getMeta().getStartTime())
                             .setEndTime(LocalDateTime.now()));
-                });
+                }));
         ActuatorManager.runActuator(actuator);
         return WrapMapper.ok(actuator.getMeta());
     }
 
     public Wrapper<List<ActuatorSnapshotInfo>> actuatorSnapshot(ActuatorSnapshotReq req) {
         if (StringUtils.hasText(req.getId())) {
-            Actuator actuator = ActuatorManager.getRunningActuator(req.getId());
+            BaseActuator actuator = ActuatorManager.getRunningActuator(req.getId());
             if (actuator != null) {
                 return WrapMapper.ok(List.of(ActuatorSnapshotInfos.runningActuatorSnapshot(actuator.snapshot())));
             }
@@ -258,7 +260,7 @@ public class NovelNetworkService {
             }
             return WrapMapper.ok(List.of(ActuatorSnapshotInfos.storageActuatorSnapshot(storageActuator)));
         }
-        Map<String, Actuator> runningActuatorMap = ActuatorManager.snapshotRunningActuator();
+        Map<String, BaseActuator> runningActuatorMap = ActuatorManager.snapshotRunningActuator();
         List<ActuatorSnapshotInfo> snapshotInfoList = new ArrayList<>();
         runningActuatorMap.forEach((id, actuator) ->
                 snapshotInfoList.add(ActuatorSnapshotInfos.runningActuatorSnapshot(actuator.snapshot())));
@@ -270,7 +272,7 @@ public class NovelNetworkService {
     }
 
     public Wrapper<Map<String, Map<String, Object>>> actuatorSnapshotStepData(ActuatorSnapshotStepDataReq req) {
-        Actuator actuator = ActuatorManager.getRunningActuator(req.getId());
+        BaseActuator actuator = ActuatorManager.getRunningActuator(req.getId());
         if (actuator != null) {
             return WrapMapper.ok(actuator.snapshotStepData());
         }
@@ -295,7 +297,7 @@ public class NovelNetworkService {
     }
 
     public Wrapper<Void> actuatorInterrupt(ActuatorSnapshotReq req) {
-        Actuator actuator = ActuatorManager.getRunningActuator(req.getId());
+        BaseActuator actuator = ActuatorManager.getRunningActuator(req.getId());
         if (actuator == null) {
             return WrapMapper.failure("执行器不存在");
         }

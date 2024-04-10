@@ -5,7 +5,7 @@ import com.moriaty.vuitton.bean.novel.network.NovelNetworkContent;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkInfo;
 import com.moriaty.vuitton.bean.novel.network.resolve.DocResolveAction;
 import com.moriaty.vuitton.bean.novel.network.resolve.DocResolveExecAction;
-import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
+import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderMeta;
 import com.moriaty.vuitton.util.NovelUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,9 @@ import java.util.List;
  */
 @Component
 @Slf4j
-public class BiCuiNovelDownloader extends NovelDownloader {
+public class BiCuiNovelDownloader extends BaseNovelDownloader {
+
+    private static final int SKIP_CHAPTER_NUM = 9;
 
     private final NovelDownloaderMeta meta = new NovelDownloaderMeta()
             .setWebName("笔翠")
@@ -88,8 +90,8 @@ public class BiCuiNovelDownloader extends NovelDownloader {
             if (domDdList.isEmpty()) {
                 return chapterList;
             }
-            if (domDdList.size() > 9) {
-                domDdList = new Elements(domDdList.subList(9, domDdList.size()));
+            if (domDdList.size() > SKIP_CHAPTER_NUM) {
+                domDdList = new Elements(domDdList.subList(SKIP_CHAPTER_NUM, domDdList.size()));
             }
             return exploreChapterList(domDdList, "");
         } catch (URISyntaxException | IOException e) {

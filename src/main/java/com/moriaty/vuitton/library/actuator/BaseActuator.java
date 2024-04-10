@@ -3,7 +3,7 @@ package com.moriaty.vuitton.library.actuator;
 import com.alibaba.fastjson2.JSONObject;
 import com.moriaty.vuitton.library.actuator.plugin.MemoryStepDataPlugin;
 import com.moriaty.vuitton.library.actuator.plugin.StepDataPlugin;
-import com.moriaty.vuitton.library.actuator.step.Step;
+import com.moriaty.vuitton.library.actuator.step.BaseStep;
 import com.moriaty.vuitton.util.UuidUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import java.util.Map;
  * @since 2024/1/29 下午2:02
  */
 @Slf4j
-public abstract class Actuator {
+public abstract class BaseActuator {
 
     @Getter
     private boolean init;
@@ -35,9 +35,9 @@ public abstract class Actuator {
     @Getter
     private ActuatorMeta meta;
 
-    protected Step currentStep;
+    protected BaseStep currentStep;
 
-    private List<Step> stepList;
+    private List<BaseStep> stepList;
 
     private ActuatorStepProgress progress;
 
@@ -47,9 +47,19 @@ public abstract class Actuator {
 
     protected StepDataPlugin stepDataPlugin;
 
+    /**
+     * 初始化 meta
+     *
+     * @return ActuatorMeta
+     */
     protected abstract ActuatorMeta initMeta();
 
-    protected abstract List<Step> initStep();
+    /**
+     * 初始化步骤
+     *
+     * @return List with BaseStep
+     */
+    protected abstract List<BaseStep> initStep();
 
     protected void init() {
         if (init) {
@@ -107,7 +117,7 @@ public abstract class Actuator {
     public ActuatorSnapshot snapshot() {
         return new ActuatorSnapshot()
                 .setMeta(meta)
-                .setStepList(stepList.stream().map(Step::getMeta).toList())
+                .setStepList(stepList.stream().map(BaseStep::getMeta).toList())
                 .setProgress(getProgress())
                 .setInterrupt(interrupt);
     }
@@ -127,7 +137,7 @@ public abstract class Actuator {
             int stepIndex;
             for (int i = 0; i < stepList.size(); i++) {
                 stepIndex = i + 1;
-                Step step = stepList.get(i);
+                BaseStep step = stepList.get(i);
                 if (lastStepDataKey != null) {
                     step.importStepData(stepDataPlugin.getStepData(lastStepDataKey));
                 }

@@ -27,9 +27,9 @@ public class ActuatorManager {
             Executors.defaultThreadFactory(),
             new ThreadPoolExecutor.AbortPolicy());
 
-    private static final Map<String, Actuator> RUNNING_ACTUATOR_MAP = new HashMap<>();
+    private static final Map<String, BaseActuator> RUNNING_ACTUATOR_MAP = new HashMap<>();
 
-    public static void runActuator(Actuator actuator) {
+    public static void runActuator(BaseActuator actuator) {
         EXECUTOR.execute(() -> {
             try {
                 if (!actuator.isInit()) {
@@ -50,11 +50,11 @@ public class ActuatorManager {
         });
     }
 
-    public static Map<String, Actuator> snapshotRunningActuator() {
+    public static Map<String, BaseActuator> snapshotRunningActuator() {
         return new HashMap<>(RUNNING_ACTUATOR_MAP);
     }
 
-    public static Actuator getRunningActuator(String id) {
+    public static BaseActuator getRunningActuator(String id) {
         return RUNNING_ACTUATOR_MAP.get(id);
     }
 

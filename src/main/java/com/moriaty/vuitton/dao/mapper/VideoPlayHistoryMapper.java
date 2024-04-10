@@ -18,6 +18,13 @@ import java.util.List;
  */
 public interface VideoPlayHistoryMapper extends BaseMapper<VideoPlayHistory> {
 
+    /**
+     * 查询播放历史
+     *
+     * @param videoId  Integer
+     * @param limitNum Integer
+     * @return List of VideoPlayHistoryInfo
+     */
     @Select("""
             <script>
             SELECT

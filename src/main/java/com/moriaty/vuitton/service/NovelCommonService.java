@@ -6,7 +6,7 @@ import com.moriaty.vuitton.dao.mapper.NovelChapterMapper;
 import com.moriaty.vuitton.dao.mapper.NovelMapper;
 import com.moriaty.vuitton.dao.model.Novel;
 import com.moriaty.vuitton.dao.model.NovelChapter;
-import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
+import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.util.NovelUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class NovelCommonService {
         if (novel == null) {
             return Optional.empty();
         }
-        NovelDownloader novelDownloader = NovelUtil.findNovelDownloader(novel.getDownloaderMark());
+        BaseNovelDownloader novelDownloader = NovelUtil.findNovelDownloader(novel.getDownloaderMark());
         if (novelDownloader == null) {
             return Optional.empty();
         }

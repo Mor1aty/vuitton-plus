@@ -29,16 +29,46 @@ import java.util.concurrent.ThreadFactory;
  * @since 2024/1/28 下午12:26
  */
 @Slf4j
-public abstract class NovelDownloader {
+public abstract class BaseNovelDownloader {
 
+    /**
+     * 获取 meta
+     *
+     * @return NovelDownloaderMeta
+     */
     public abstract NovelDownloaderMeta getMeta();
 
+    /**
+     * 获取信息
+     *
+     * @param catalogueUrl String
+     * @return NovelNetworkInfo
+     */
     public abstract NovelNetworkInfo findInfo(String catalogueUrl);
 
+    /**
+     * 获取章节列表
+     *
+     * @param catalogueUrl String
+     * @return List with NovelNetworkChapter
+     */
     public abstract List<NovelNetworkChapter> findChapterList(String catalogueUrl);
 
+    /**
+     * 获取内容
+     *
+     * @param title      String
+     * @param contentUrl String
+     * @return NovelNetworkContent
+     */
     public abstract NovelNetworkContent findContent(String title, String contentUrl);
 
+    /**
+     * 去除异常内容
+     *
+     * @param content String
+     * @return String
+     */
     public abstract String removeAbnormalContent(String content);
 
     protected boolean skipContent(String content) {

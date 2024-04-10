@@ -4,7 +4,7 @@ import com.moriaty.vuitton.bean.novel.network.NovelNetworkContent;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkChapter;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkInfo;
 import com.moriaty.vuitton.constant.Constant;
-import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
+import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderMeta;
 import com.moriaty.vuitton.util.NovelUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import java.util.List;
  */
 @Component
 @Slf4j
-public class BiQuGeNovelDownloader extends NovelDownloader {
+public class BiQuGeNovelDownloader extends BaseNovelDownloader {
 
     private final NovelDownloaderMeta meta = new NovelDownloaderMeta()
             .setWebName("笔奇部")

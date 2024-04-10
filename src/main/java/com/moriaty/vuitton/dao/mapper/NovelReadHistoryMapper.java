@@ -18,6 +18,12 @@ import java.util.List;
  */
 public interface NovelReadHistoryMapper extends BaseMapper<NovelReadHistory> {
 
+    /**
+     * 查询阅读历史
+     *
+     * @param novelId Integer
+     * @return List with NovelLocalReadHistoryInfo
+     */
     @Select("""
             <script>
             SELECT

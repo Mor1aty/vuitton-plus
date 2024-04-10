@@ -6,7 +6,7 @@ import com.moriaty.vuitton.bean.novel.network.resolve.DocResolveAction;
 import com.moriaty.vuitton.bean.novel.network.resolve.DocResolveExecAction;
 import com.moriaty.vuitton.constant.Constant;
 import com.moriaty.vuitton.dao.model.NovelChapter;
-import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
+import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -40,8 +40,8 @@ public class NovelUtil {
 
     }
 
-    public static NovelDownloader findNovelDownloader(String downloaderMark) {
-        NovelDownloader downloader = NovelDownloaderFactory.getDownloader(downloaderMark);
+    public static BaseNovelDownloader findNovelDownloader(String downloaderMark) {
+        BaseNovelDownloader downloader = NovelDownloaderFactory.getDownloader(downloaderMark);
         if (downloader == null) {
             log.error("小说下载器 {} 不存在", downloaderMark);
             return null;

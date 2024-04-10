@@ -4,9 +4,9 @@ import com.alibaba.fastjson2.TypeReference;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkFixDownloadResult;
 import com.moriaty.vuitton.dao.model.Novel;
 import com.moriaty.vuitton.dao.model.NovelChapter;
-import com.moriaty.vuitton.library.actuator.step.RepeatStep;
+import com.moriaty.vuitton.library.actuator.step.BaseRepeatStep;
 import com.moriaty.vuitton.library.actuator.step.StepMeta;
-import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
+import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Comparator;
@@ -21,13 +21,15 @@ import java.util.List;
  * @since 2024/1/29 下午8:41
  */
 @Slf4j
-public class FixDownloadStep extends RepeatStep {
+public class FixDownloadStep extends BaseRepeatStep {
 
     private Novel novel;
 
-    private final NovelDownloader novelDownloader;
+    private final BaseNovelDownloader novelDownloader;
 
-    public FixDownloadStep(NovelDownloader novelDownloader) {
+    private static final String KEY_MISSING_CHAPTER_NUM = "missingChapterNum";
+
+    public FixDownloadStep(BaseNovelDownloader novelDownloader) {
         this.novelDownloader = novelDownloader;
     }
 
@@ -38,7 +40,7 @@ public class FixDownloadStep extends RepeatStep {
 
     @Override
     public String getProgress() {
-        Integer missingChapterNum = super.getStepData("missingChapterNum", new TypeReference<>() {
+        Integer missingChapterNum = super.getStepData(KEY_MISSING_CHAPTER_NUM, new TypeReference<>() {
         });
         if (missingChapterNum == null) {
             return "正在检查缺失章节";
@@ -53,7 +55,7 @@ public class FixDownloadStep extends RepeatStep {
         if (fixDownloadFailure != null) {
             return true;
         }
-        Integer missingChapterNum = super.getStepData("missingChapterNum", new TypeReference<>() {
+        Integer missingChapterNum = super.getStepData(KEY_MISSING_CHAPTER_NUM, new TypeReference<>() {
                 });
         return missingChapterNum != null && missingChapterNum == 0;
     }
@@ -70,7 +72,7 @@ public class FixDownloadStep extends RepeatStep {
             super.putStepData("fixDownloadFailure", true);
             return;
         }
-        super.putStepData("missingChapterNum", fixDownloadResult.getMissingChapterList().size());
+        super.putStepData(KEY_MISSING_CHAPTER_NUM, fixDownloadResult.getMissingChapterList().size());
         if (!fixDownloadResult.getFixContentList().isEmpty()) {
             chapterList.addAll(fixDownloadResult.getFixContentList().stream()
                     .map(content -> new NovelChapter()

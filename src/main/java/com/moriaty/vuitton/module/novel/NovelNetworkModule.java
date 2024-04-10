@@ -5,7 +5,7 @@ import com.moriaty.vuitton.dao.model.Novel;
 import com.moriaty.vuitton.dao.model.NovelChapter;
 import com.moriaty.vuitton.module.Module;
 import com.moriaty.vuitton.module.ModuleFactory;
-import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
+import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -32,7 +32,7 @@ public class NovelNetworkModule implements InitializingBean {
                 .setName("网络小说"));
     }
 
-    public Optional<NovelNetworkCatalogue> findCatalogue(@Nonnull NovelDownloader novelDownloader, String catalogueUrl) {
+    public Optional<NovelNetworkCatalogue> findCatalogue(@Nonnull BaseNovelDownloader novelDownloader, String catalogueUrl) {
         NovelNetworkInfo info = novelDownloader.findInfo(catalogueUrl);
         if (info == null) {
             log.error("{} 获取 {} 信息失败", novelDownloader.getMeta().getMark(), catalogueUrl);
@@ -48,13 +48,13 @@ public class NovelNetworkModule implements InitializingBean {
                 .setChapterList(chapterList));
     }
 
-    public Optional<NovelNetworkContent> findContent(@Nonnull NovelDownloader novelDownloader,
+    public Optional<NovelNetworkContent> findContent(@Nonnull BaseNovelDownloader novelDownloader,
                                                      String title, String contentUrl) {
         NovelNetworkContent content = novelDownloader.findContent(title, contentUrl);
         return Optional.of(content);
     }
 
-    public Optional<NovelNetworkDownloadResult> download(@Nonnull NovelDownloader novelDownloader,
+    public Optional<NovelNetworkDownloadResult> download(@Nonnull BaseNovelDownloader novelDownloader,
                                                          String name, String catalogueUrl, boolean parallel) {
         NovelNetworkDownloadResult result = parallel ? novelDownloader.parallelDownload(name, catalogueUrl)
                 : novelDownloader.serialDownload(name, catalogueUrl);
@@ -65,7 +65,7 @@ public class NovelNetworkModule implements InitializingBean {
         return Optional.of(result);
     }
 
-    public Optional<NovelNetworkFixDownloadResult> fixDownload(@Nonnull NovelDownloader novelDownloader, Novel novel,
+    public Optional<NovelNetworkFixDownloadResult> fixDownload(@Nonnull BaseNovelDownloader novelDownloader, Novel novel,
                                                                List<NovelChapter> existedChapterList, int fixNum) {
         NovelNetworkFixDownloadResult result = novelDownloader.fixDownload(novel, existedChapterList, fixNum);
         if (result == null) {
@@ -75,7 +75,7 @@ public class NovelNetworkModule implements InitializingBean {
         return Optional.of(result);
     }
 
-    public Optional<List<NovelNetworkChapter>> checkMissing(@Nonnull NovelDownloader novelDownloader, Novel novel,
+    public Optional<List<NovelNetworkChapter>> checkMissing(@Nonnull BaseNovelDownloader novelDownloader, Novel novel,
                                                             List<NovelChapter> existedChapterList) {
         List<Integer> existedIndexList = existedChapterList.stream().map(NovelChapter::getIndex).toList();
         List<NovelNetworkChapter> chapterList = novelDownloader.findChapterList(novel.getDownloaderCatalogueUrl());

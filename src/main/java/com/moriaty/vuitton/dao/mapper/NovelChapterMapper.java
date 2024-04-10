@@ -17,6 +17,11 @@ import java.util.List;
  */
 public interface NovelChapterMapper extends BaseMapper<NovelChapter> {
 
+    /**
+     * 批量插入
+     *
+     * @param chapterList List with NovelChapter
+     */
     @Insert("""
             <script>
                 INSERT INTO novel_chapter(novel, `index`, title, content, content_html)

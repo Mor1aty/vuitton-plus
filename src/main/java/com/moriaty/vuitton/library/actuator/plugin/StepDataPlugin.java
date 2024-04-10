@@ -15,16 +15,46 @@ import java.util.Map;
  */
 public interface StepDataPlugin {
 
+    /**
+     * 获取名称
+     *
+     * @return String
+     */
     String getName();
 
+    /**
+     * 存储 meta 数据
+     *
+     * @param meta ActuatorMeta
+     */
     void storeMetaData(ActuatorMeta meta);
 
+    /**
+     * 存储步骤数据
+     *
+     * @param stepName String
+     * @param stepData JSONObject
+     */
     void storeStepData(String stepName, JSONObject stepData);
 
+    /**
+     * 获取步骤数据
+     *
+     * @param stepName String
+     * @return JSONObject
+     */
     JSONObject getStepData(String stepName);
 
+    /**
+     * 快照步骤数据
+     *
+     * @return Map with key String val JSONObject
+     */
     Map<String, JSONObject> snapshotStepData();
 
+    /**
+     * 清理步骤数据
+     */
     void clearStepData();
 
 }

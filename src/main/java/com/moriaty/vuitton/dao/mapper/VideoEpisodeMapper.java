@@ -17,6 +17,11 @@ import java.util.List;
  */
 public interface VideoEpisodeMapper extends BaseMapper<VideoEpisode> {
 
+    /**
+     * 批量插入
+     *
+     * @param episodeList List with VideoEpisode
+     */
     @Insert("""
             <script>
                 INSERT INTO video_episode(video, `index`, `name`, `url`)

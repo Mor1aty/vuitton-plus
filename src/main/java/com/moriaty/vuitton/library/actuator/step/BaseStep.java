@@ -18,7 +18,7 @@ import java.util.Map;
  * @since 2024/1/29 下午2:35
  */
 @Slf4j
-public abstract class Step {
+public abstract class BaseStep {
 
     @Getter
     private StepMeta meta;
@@ -29,14 +29,29 @@ public abstract class Step {
 
     private final JSONObject stepData = new JSONObject();
 
-    protected Step() {
+    protected BaseStep() {
         init();
     }
 
+    /**
+     * 初始化 meta
+     *
+     * @return StepMeta
+     */
     protected abstract StepMeta initMeta();
 
+    /**
+     * 获取进度
+     *
+     * @return String
+     */
     public abstract String getProgress();
 
+    /**
+     * 运行内容
+     *
+     * @return boolean
+     */
     public abstract boolean runContent();
 
     public void importStepData(JSONObject shareData) {

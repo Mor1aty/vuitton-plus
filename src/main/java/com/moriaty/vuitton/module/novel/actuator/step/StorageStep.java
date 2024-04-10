@@ -4,7 +4,7 @@ import com.alibaba.fastjson2.TypeReference;
 import com.moriaty.vuitton.ServerInfo;
 import com.moriaty.vuitton.dao.model.Novel;
 import com.moriaty.vuitton.dao.model.NovelChapter;
-import com.moriaty.vuitton.library.actuator.step.Step;
+import com.moriaty.vuitton.library.actuator.step.BaseStep;
 import com.moriaty.vuitton.library.actuator.step.StepMeta;
 import com.moriaty.vuitton.util.NovelUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import java.util.function.BiPredicate;
  * @since 2024/1/29 下午9:11
  */
 @Slf4j
-public class StorageStep extends Step {
+public class StorageStep extends BaseStep {
 
     private final BiPredicate<Novel, List<NovelChapter>> storage;
 

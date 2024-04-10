@@ -2,7 +2,7 @@ package com.moriaty.vuitton;
 
 import com.moriaty.vuitton.module.Module;
 import com.moriaty.vuitton.module.ModuleFactory;
-import com.moriaty.vuitton.module.novel.downloader.NovelDownloader;
+import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderFactory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -108,13 +108,13 @@ public class AfterStartup implements CommandLineRunner {
     }
 
     private void loadNovelDownloader() {
-        Map<String, NovelDownloader> novelDownloaderBeanMap = applicationContext.getBeansOfType(NovelDownloader.class);
+        Map<String, BaseNovelDownloader> novelDownloaderBeanMap = applicationContext.getBeansOfType(BaseNovelDownloader.class);
         if (novelDownloaderBeanMap.isEmpty()) {
             log.info("无可用小说下载器");
         } else {
-            Map<String, NovelDownloader> novelDownloaderMap = HashMap.newHashMap(novelDownloaderBeanMap.size());
+            Map<String, BaseNovelDownloader> novelDownloaderMap = HashMap.newHashMap(novelDownloaderBeanMap.size());
             StringBuilder sb = new StringBuilder();
-            for (NovelDownloader novelDownloaderBean : novelDownloaderBeanMap.values()) {
+            for (BaseNovelDownloader novelDownloaderBean : novelDownloaderBeanMap.values()) {
                 if (Boolean.TRUE.equals(novelDownloaderBean.getMeta().getDisable())) {
                     continue;
                 }

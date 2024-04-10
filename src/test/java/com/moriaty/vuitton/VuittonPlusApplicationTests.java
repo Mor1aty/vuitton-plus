@@ -8,6 +8,7 @@ class VuittonPlusApplicationTests {
 
     @Test
     void contextLoads() {
+        assert true;
     }
 
 }
