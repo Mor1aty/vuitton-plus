@@ -61,7 +61,8 @@ public class NovelLocalService {
     private final NovelReadHistoryMapper novelReadHistoryMapper;
 
     public Wrapper<PageResp<Novel>> findNovel(FindNovelReq req) {
-        LambdaQueryWrapper<Novel> queryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<Novel> queryWrapper = new LambdaQueryWrapper<Novel>()
+                .orderByDesc(Novel::getCreateTime);
         if (StringUtils.hasText(req.getName())) {
             queryWrapper.like(Novel::getName, req.getName());
         }
@@ -112,6 +113,8 @@ public class NovelLocalService {
     }
 
     public Wrapper<Void> deleteNovel(DeleteNovelReq req) {
+        novelReadHistoryMapper.delete(new LambdaQueryWrapper<NovelReadHistory>()
+                .eq(NovelReadHistory::getNovel, req.getId()));
         novelChapterMapper.delete(new LambdaQueryWrapper<NovelChapter>()
                 .eq(NovelChapter::getNovel, req.getId()));
         novelMapper.deleteById(req.getId());

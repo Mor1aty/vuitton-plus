@@ -111,6 +111,6 @@ public class BiCuiNovelDownloader extends NovelDownloader {
 
     @Override
     public String removeAbnormalContent(String content) {
-        return content;
+        return content.replace(" ", "\n").trim();
     }
 }

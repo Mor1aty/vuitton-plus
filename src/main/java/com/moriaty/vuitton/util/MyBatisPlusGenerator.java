@@ -39,7 +39,7 @@ public class MyBatisPlusGenerator {
                 .templateConfig(builder -> builder
                         .disable(TemplateType.XML, TemplateType.MAPPER, TemplateType.SERVICE,
                                 TemplateType.SERVICE_IMPL, TemplateType.CONTROLLER))
-                .strategyConfig(builder -> builder.addInclude("video_play_history")
+                .strategyConfig(builder -> builder.addInclude("")
                         .entityBuilder().enableLombok().enableChainModel()
                         .enableFileOverride().disableSerialVersionUID())
                 .execute();

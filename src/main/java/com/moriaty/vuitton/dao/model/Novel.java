@@ -3,6 +3,7 @@ package com.moriaty.vuitton.dao.model;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -13,7 +14,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author Moriaty
- * @since 2024-04-08 17:58:39
+ * @since 2024-04-10 17:14:10
  */
 @Getter
 @Setter
@@ -37,4 +38,6 @@ public class Novel {
     private String downloaderMark;
 
     private String downloaderCatalogueUrl;
+
+    private LocalDateTime createTime;
 }

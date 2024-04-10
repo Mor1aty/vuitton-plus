@@ -127,7 +127,8 @@ public class NovelNetworkService {
                 .setImgUrl(imgFileUrl)
                 .setFileUrl(fileUrl)
                 .setDownloaderMark(downloadResult.getInfo().getDownloaderMark())
-                .setDownloaderCatalogueUrl(downloadResult.getInfo().getDownloaderCatalogueUrl());
+                .setDownloaderCatalogueUrl(downloadResult.getInfo().getDownloaderCatalogueUrl())
+                .setCreateTime(LocalDateTime.now());
         int effectRow = novelMapper.insert(novel);
         if (effectRow != 1) {
             return WrapMapper.failure("存储失败");
@@ -210,6 +211,7 @@ public class NovelNetworkService {
                 Constant.Actuator.REDIS_PREFIX_ACTUATOR_NOVEL_DOWNLOAD + actuatorId + ":",
                 Constant.Actuator.REDIS_TTL_ACTUATOR_NOVEL_DOWNLOAD, novelDownloader, defaultNovelImg,
                 (novel, chapterList) -> {
+                    novel.setCreateTime(LocalDateTime.now());
                     int effectRow = novelMapper.insert(novel);
                     if (effectRow != 1) {
                         return false;

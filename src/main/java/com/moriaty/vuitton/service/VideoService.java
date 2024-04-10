@@ -67,7 +67,8 @@ public class VideoService {
         Video video = new Video()
                 .setName(req.getName())
                 .setDescription(req.getDescription())
-                .setImgUrl(imgOptional.get());
+                .setImgUrl(imgOptional.get())
+                .setCreateTime(LocalDateTime.now());
         videoMapper.insert(video);
         Optional<List<VideoEpisode>> episodeOptional = videoModule.importEpisode(
                 videoFolderUrl + req.getName() + "/", video.getId());
@@ -76,7 +77,8 @@ public class VideoService {
     }
 
     public Wrapper<PageResp<Video>> findVideo(FindVideoReq req) {
-        LambdaQueryWrapper<Video> queryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<Video> queryWrapper = new LambdaQueryWrapper<Video>()
+                .orderByDesc(Video::getCreateTime);
         if (StringUtils.hasText(req.getName())) {
             queryWrapper.like(Video::getName, req.getName());
         }
