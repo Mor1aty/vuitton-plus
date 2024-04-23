@@ -7,6 +7,7 @@ import com.moriaty.vuitton.bean.PageResp;
 import com.moriaty.vuitton.bean.video.VideoAroundEpisode;
 import com.moriaty.vuitton.bean.video.VideoPlayHistoryInfo;
 import com.moriaty.vuitton.bean.video.VideoPlayHistoryRedisInfo;
+import com.moriaty.vuitton.bean.video.VideoSearchInfo;
 import com.moriaty.vuitton.bean.video.req.*;
 import com.moriaty.vuitton.constant.Constant;
 import com.moriaty.vuitton.dao.mapper.VideoEpisodeMapper;
@@ -76,14 +77,21 @@ public class VideoService {
         return WrapMapper.ok();
     }
 
-    public Wrapper<PageResp<Video>> findVideo(FindVideoReq req) {
-        LambdaQueryWrapper<Video> queryWrapper = new LambdaQueryWrapper<Video>()
-                .orderByDesc(Video::getCreateTime);
+    public Wrapper<PageResp<VideoSearchInfo>> findVideo(FindVideoReq req) {
+        int startIndex = (req.getPageNum() - 1) * req.getPageSize();
         if (StringUtils.hasText(req.getName())) {
-            queryWrapper.like(Video::getName, req.getName());
+            req.setName("%" + req.getName() + "%");
         }
-        Page<Video> videoPage = videoMapper.selectPage(new Page<>(req.getPageNum(), req.getPageSize()), queryWrapper);
-        return WrapMapper.ok(new PageResp<>(req, videoPage));
+        if (req.getSearchType() != null && req.getSearchType() == Constant.Video.SEARCH_TYPE_PLAY_HISTORY) {
+            List<VideoSearchInfo> videoList = videoMapper.findHistorySearchVideoPage(req.getName(),
+                    startIndex, req.getPageSize());
+            long total = videoMapper.findHistorySearchVideoPageTotal(req.getName());
+            return WrapMapper.ok(new PageResp<>(req, videoList, total));
+        }
+        List<VideoSearchInfo> videoList = videoMapper.findSearchVideoPage(req.getName(),
+                startIndex, req.getPageSize());
+        long total = videoMapper.findSearchVideoPageTotal(req.getName());
+        return WrapMapper.ok(new PageResp<>(req, videoList, total));
     }
 
     public Wrapper<PageResp<VideoEpisode>> findEpisode(FindEpisodeReq req) {

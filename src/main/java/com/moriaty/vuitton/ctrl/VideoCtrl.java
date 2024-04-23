@@ -3,8 +3,8 @@ package com.moriaty.vuitton.ctrl;
 import com.moriaty.vuitton.bean.PageResp;
 import com.moriaty.vuitton.bean.video.VideoAroundEpisode;
 import com.moriaty.vuitton.bean.video.VideoPlayHistoryInfo;
+import com.moriaty.vuitton.bean.video.VideoSearchInfo;
 import com.moriaty.vuitton.bean.video.req.*;
-import com.moriaty.vuitton.dao.model.Video;
 import com.moriaty.vuitton.dao.model.VideoEpisode;
 import com.moriaty.vuitton.library.wrap.Wrapper;
 import com.moriaty.vuitton.service.VideoService;
@@ -40,7 +40,7 @@ public class VideoCtrl {
     }
 
     @PostMapping("findVideo")
-    public Wrapper<PageResp<Video>> findVideo(@RequestBody @Validated FindVideoReq req) {
+    public Wrapper<PageResp<VideoSearchInfo>> findVideo(@RequestBody @Validated FindVideoReq req) {
         return videoService.findVideo(req);
     }
 

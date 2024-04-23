@@ -90,6 +90,8 @@ public class Constant {
 
         public static final Duration REDIS_TTL_PLAY_HISTORY = Duration.ofDays(1L);
 
+        public static final int SEARCH_TYPE_PLAY_HISTORY = 1;
+
     }
 
     public static class Actuator {

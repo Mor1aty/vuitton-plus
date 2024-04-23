@@ -34,4 +34,12 @@ public class PageResp<T> {
         this.pageNum = req.getPageNum();
         this.pageSize = req.getPageSize();
     }
+
+    public PageResp(PageReq req, List<T> list, long total) {
+        this.list = list;
+        this.total = total;
+        this.pageNum = req.getPageNum();
+        this.pageSize = req.getPageSize();
+    }
+
 }

@@ -18,4 +18,6 @@ public class FindVideoReq extends PageReq {
 
     private String name;
 
+    private Integer searchType;
+
 }
