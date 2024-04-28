@@ -59,19 +59,19 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.16.2</version>
+            <version>1.17.2</version>
         </dependency>
         <!-- jsoup end -->
         <!-- mybatis plus begin-->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>3.5.5</version>
+            <version>3.5.6</version>
         </dependency>
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-generator</artifactId>
-            <version>3.5.5</version>
+            <version>3.5.6</version>
         </dependency>
         <dependency>
             <groupId>org.apache.velocity</groupId>
@@ -110,7 +110,7 @@
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
-            <version>3.1.0-M1</version>
+            <version>3.1.0-M2</version>
         </dependency>
         <!-- validation end -->
         <!-- common-io begin -->
@@ -126,6 +126,13 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
         <!-- web socket end -->
+        <!-- mongo begin -->
+        <dependency>
+            <groupId>com.gitee.anwena</groupId>
+            <artifactId>mongo-plus-boot-starter</artifactId>
+            <version>2.0.8.3</version>
+        </dependency>
+        <!-- mongo end -->
     </dependencies>
 
     <build>
@@ -153,6 +160,11 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
+        </repository>
+        <repository>
+            <id>maven_central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2/</url>
         </repository>
     </repositories>
     <pluginRepositories>

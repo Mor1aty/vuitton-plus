@@ -1,9 +1,11 @@
 package com.moriaty.vuitton.module.novel.actuator.step;
 
 import com.alibaba.fastjson2.TypeReference;
+import com.moriaty.vuitton.bean.novel.local.NovelChapterWithContent;
 import com.moriaty.vuitton.bean.novel.network.*;
-import com.moriaty.vuitton.dao.model.Novel;
-import com.moriaty.vuitton.dao.model.NovelChapter;
+import com.moriaty.vuitton.dao.mongo.model.MongoNovelChapterContent;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
+import com.moriaty.vuitton.dao.mysql.model.NovelChapter;
 import com.moriaty.vuitton.library.actuator.step.BaseStep;
 import com.moriaty.vuitton.library.actuator.step.StepMeta;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
@@ -76,13 +78,13 @@ public class DownloadStep extends BaseStep {
             return false;
         }
         super.putStepData("totalChapterNum", chapterList.size());
-        List<NovelChapter> downloadChapterList;
+        List<NovelChapterWithContent> downloadChapterList;
         if (Boolean.TRUE.equals(parallel)) {
             // 并行下载
-            downloadChapterList = parallelDownload(novelDownloader, chapterList);
+            downloadChapterList = parallelDownload(novelDownloader, novelName, chapterList);
         } else {
             // 串行下载
-            downloadChapterList = serialDownload(novelDownloader, chapterList);
+            downloadChapterList = serialDownload(novelDownloader, novelName, chapterList);
         }
         super.putStepData("chapterList", downloadChapterList);
         log.info("小说 {} 下载成功, 章节数: {}, 成功章节数: {}", novel.getName(),
@@ -90,8 +92,9 @@ public class DownloadStep extends BaseStep {
         return true;
     }
 
-    private List<NovelChapter> serialDownload(BaseNovelDownloader novelDownloader, List<NovelNetworkChapter> chapterList) {
-        List<NovelChapter> downloadChapterList = new ArrayList<>();
+    private List<NovelChapterWithContent> serialDownload(BaseNovelDownloader novelDownloader, String novelName,
+                                                         List<NovelNetworkChapter> chapterList) {
+        List<NovelChapterWithContent> downloadChapterList = new ArrayList<>();
         for (NovelNetworkChapter chapter : chapterList) {
             if (super.isInterrupt()) {
                 log.error("下载小说章节被打断");
@@ -102,18 +105,25 @@ public class DownloadStep extends BaseStep {
             super.putStepData("currentChapterIndex", chapter.getIndex());
             if (content != null && !StringUtils.hasText(content.getErrorMsg())) {
                 log.info("{} 串行下载 {} {}", novelDownloader.getMeta().getMark(), chapter.getIndex(), chapter.getTitle());
-                downloadChapterList.add(new NovelChapter()
-                        .setIndex(chapter.getIndex())
-                        .setTitle(content.getTitle())
-                        .setContent(content.getContent())
-                        .setContentHtml(content.getContentHtml()));
+                downloadChapterList.add(
+                        new NovelChapterWithContent()
+                                .setChapter(new NovelChapter()
+                                        .setIndex(chapter.getIndex())
+                                        .setTitle(content.getTitle()))
+                                .setContent(new MongoNovelChapterContent()
+                                        .setNovelName(novelName)
+                                        .setChapterTitle(content.getTitle())
+                                        .setContent(content.getContent())
+                                        .setContentHtml(content.getContentHtml()))
+                );
             }
         }
         return downloadChapterList;
     }
 
-    private List<NovelChapter> parallelDownload(BaseNovelDownloader novelDownloader, List<NovelNetworkChapter> chapterList) {
-        List<NovelChapter> downloadChapterList = new ArrayList<>();
+    private List<NovelChapterWithContent> parallelDownload(BaseNovelDownloader novelDownloader, String novelName,
+                                                           List<NovelNetworkChapter> chapterList) {
+        List<NovelChapterWithContent> downloadChapterList = new ArrayList<>();
         Map<Integer, NovelNetworkContent> contentMap = new TreeMap<>();
         try {
             ThreadFactory factory = Thread.ofVirtual().name("actuator-novel-downloader", 0).factory();
@@ -146,11 +156,16 @@ public class DownloadStep extends BaseStep {
         }
         log.info("共下载章节: {}", contentMap.size());
         if (!contentMap.isEmpty()) {
-            contentMap.forEach((chapterIndex, content) -> downloadChapterList.add(new NovelChapter()
-                    .setIndex(chapterIndex)
-                    .setTitle(content.getTitle())
-                    .setContent(content.getContent())
-                    .setContentHtml(content.getContentHtml())));
+            contentMap.forEach((chapterIndex, content) -> downloadChapterList.add(new NovelChapterWithContent()
+                    .setChapter(new NovelChapter()
+                            .setIndex(chapterIndex)
+                            .setTitle(content.getTitle()))
+                    .setContent(new MongoNovelChapterContent()
+                            .setNovelName(novelName)
+                            .setChapterTitle(content.getTitle())
+                            .setContent(content.getContent())
+                            .setContentHtml(content.getContentHtml())))
+            );
         }
         return downloadChapterList;
     }

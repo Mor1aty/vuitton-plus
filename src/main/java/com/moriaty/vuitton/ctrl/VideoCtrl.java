@@ -5,7 +5,7 @@ import com.moriaty.vuitton.bean.video.VideoAroundEpisode;
 import com.moriaty.vuitton.bean.video.VideoPlayHistoryInfo;
 import com.moriaty.vuitton.bean.video.VideoSearchInfo;
 import com.moriaty.vuitton.bean.video.req.*;
-import com.moriaty.vuitton.dao.model.VideoEpisode;
+import com.moriaty.vuitton.dao.mysql.model.VideoEpisode;
 import com.moriaty.vuitton.library.wrap.Wrapper;
 import com.moriaty.vuitton.service.VideoService;
 import lombok.AllArgsConstructor;

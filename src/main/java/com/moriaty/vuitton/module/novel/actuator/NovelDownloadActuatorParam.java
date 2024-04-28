@@ -1,7 +1,7 @@
 package com.moriaty.vuitton.module.novel.actuator;
 
-import com.moriaty.vuitton.dao.model.Novel;
-import com.moriaty.vuitton.dao.model.NovelChapter;
+import com.moriaty.vuitton.bean.novel.local.NovelChapterWithContent;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
 import com.moriaty.vuitton.library.actuator.ActuatorSnapshot;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -24,7 +24,7 @@ public record NovelDownloadActuatorParam(String id, String novelName, String nov
                                          StringRedisTemplate stringRedisTemplate, String redisKeyPrefix,
                                          Duration redisTtl,
                                          BaseNovelDownloader novelDownloader, String defaultNovelImg,
-                                         BiPredicate<Novel, List<NovelChapter>> storageStepStrategy,
+                                         BiPredicate<Novel, List<NovelChapterWithContent>> storageStepStrategy,
                                          BiConsumer<ActuatorSnapshot,
                                                  Map<String, Map<String, Object>>> beforeEndStrategy) {
 }

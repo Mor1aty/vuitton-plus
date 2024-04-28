@@ -2,7 +2,7 @@ package com.moriaty.vuitton.module.video;
 
 import com.moriaty.vuitton.ServerInfo;
 import com.moriaty.vuitton.bean.video.VideoAroundEpisode;
-import com.moriaty.vuitton.dao.model.VideoEpisode;
+import com.moriaty.vuitton.dao.mysql.model.VideoEpisode;
 import com.moriaty.vuitton.module.Module;
 import com.moriaty.vuitton.module.ModuleFactory;
 import com.moriaty.vuitton.util.FileServerUtil;

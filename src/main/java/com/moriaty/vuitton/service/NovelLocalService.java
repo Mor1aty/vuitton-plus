@@ -9,12 +9,14 @@ import com.moriaty.vuitton.bean.novel.local.NovelLocalFullInfo;
 import com.moriaty.vuitton.bean.novel.local.NovelLocalReadHistoryInfo;
 import com.moriaty.vuitton.bean.novel.local.req.*;
 import com.moriaty.vuitton.bean.novel.network.req.ReparseFileReq;
-import com.moriaty.vuitton.dao.mapper.NovelChapterMapper;
-import com.moriaty.vuitton.dao.mapper.NovelMapper;
-import com.moriaty.vuitton.dao.mapper.NovelReadHistoryMapper;
-import com.moriaty.vuitton.dao.model.Novel;
-import com.moriaty.vuitton.dao.model.NovelChapter;
-import com.moriaty.vuitton.dao.model.NovelReadHistory;
+import com.moriaty.vuitton.dao.mongo.impl.MongoNovelChapterContentImpl;
+import com.moriaty.vuitton.dao.mongo.model.MongoNovelChapterContent;
+import com.moriaty.vuitton.dao.mysql.mapper.NovelChapterMapper;
+import com.moriaty.vuitton.dao.mysql.mapper.NovelMapper;
+import com.moriaty.vuitton.dao.mysql.mapper.NovelReadHistoryMapper;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
+import com.moriaty.vuitton.dao.mysql.model.NovelChapter;
+import com.moriaty.vuitton.dao.mysql.model.NovelReadHistory;
 import com.moriaty.vuitton.library.wrap.WrapMapper;
 import com.moriaty.vuitton.library.wrap.Wrapper;
 import com.moriaty.vuitton.module.novel.NovelLocalModule;
@@ -60,6 +62,8 @@ public class NovelLocalService {
 
     private final NovelReadHistoryMapper novelReadHistoryMapper;
 
+    private final MongoNovelChapterContentImpl mongoNovelChapterContentImpl;
+
     public Wrapper<PageResp<Novel>> findNovel(FindNovelReq req) {
         LambdaQueryWrapper<Novel> queryWrapper = new LambdaQueryWrapper<Novel>()
                 .orderByDesc(Novel::getCreateTime);
@@ -87,7 +91,14 @@ public class NovelLocalService {
         }
         Optional<NovelLocalAroundChapter> optional =
                 novelLocalModule.findAroundChapter(chapterList, req.getChapterIndex());
-        return optional.map(WrapMapper::ok).orElseGet(() -> WrapMapper.failure("小说当前章节不存在"));
+        if (optional.isEmpty()) {
+            return WrapMapper.failure("小说当前章节不存在");
+        }
+        NovelLocalAroundChapter aroundChapter = optional.get();
+        MongoNovelChapterContent content =
+                mongoNovelChapterContentImpl.getById(aroundChapter.getChapter().getContentId());
+        aroundChapter.setContent(content);
+        return WrapMapper.ok(aroundChapter);
     }
 
     public Wrapper<String> reparseFile(ReparseFileReq req) {
@@ -97,7 +108,7 @@ public class NovelLocalService {
         }
         NovelLocalFullInfo novelFullInfo = novelFullInfoOptional.get();
         Optional<File> optional = novelLocalModule.reparseFile(novelFullInfo.getNovel(),
-                novelFullInfo.getChapterList());
+                novelFullInfo.getChapterContentList());
         if (optional.isEmpty()) {
             return WrapMapper.failure("重新解析小说文件失败");
         }
@@ -115,6 +126,9 @@ public class NovelLocalService {
     public Wrapper<Void> deleteNovel(DeleteNovelReq req) {
         novelReadHistoryMapper.delete(new LambdaQueryWrapper<NovelReadHistory>()
                 .eq(NovelReadHistory::getNovel, req.getId()));
+        List<NovelChapter> chapterList = novelChapterMapper.selectList(new LambdaQueryWrapper<NovelChapter>()
+                .eq(NovelChapter::getNovel, req.getId()));
+        mongoNovelChapterContentImpl.removeBatchByIds(chapterList.stream().map(NovelChapter::getContentId).toList());
         novelChapterMapper.delete(new LambdaQueryWrapper<NovelChapter>()
                 .eq(NovelChapter::getNovel, req.getId()));
         novelMapper.deleteById(req.getId());

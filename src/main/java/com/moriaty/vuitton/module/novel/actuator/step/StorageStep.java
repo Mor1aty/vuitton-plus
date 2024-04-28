@@ -2,8 +2,8 @@ package com.moriaty.vuitton.module.novel.actuator.step;
 
 import com.alibaba.fastjson2.TypeReference;
 import com.moriaty.vuitton.ServerInfo;
-import com.moriaty.vuitton.dao.model.Novel;
-import com.moriaty.vuitton.dao.model.NovelChapter;
+import com.moriaty.vuitton.bean.novel.local.NovelChapterWithContent;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
 import com.moriaty.vuitton.library.actuator.step.BaseStep;
 import com.moriaty.vuitton.library.actuator.step.StepMeta;
 import com.moriaty.vuitton.util.NovelUtil;
@@ -25,9 +25,9 @@ import java.util.function.BiPredicate;
 @Slf4j
 public class StorageStep extends BaseStep {
 
-    private final BiPredicate<Novel, List<NovelChapter>> storage;
+    private final BiPredicate<Novel, List<NovelChapterWithContent>> storage;
 
-    public StorageStep(BiPredicate<Novel, List<NovelChapter>> storage) {
+    public StorageStep(BiPredicate<Novel, List<NovelChapterWithContent>> storage) {
         this.storage = storage;
     }
 
@@ -45,7 +45,7 @@ public class StorageStep extends BaseStep {
     public boolean runContent() {
         Novel novel = super.getStepData("novel", new TypeReference<>() {
         });
-        List<NovelChapter> chapterList = super.getStepData("chapterList", new TypeReference<>() {
+        List<NovelChapterWithContent> chapterList = super.getStepData("chapterList", new TypeReference<>() {
         });
         File file = NovelUtil.writeToFile(novel.getName(), novel.getAuthor(), novel.getIntro(), chapterList);
         if (file == null) {

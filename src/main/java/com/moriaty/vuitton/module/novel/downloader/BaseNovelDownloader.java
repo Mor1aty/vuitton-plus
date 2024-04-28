@@ -1,8 +1,8 @@
 package com.moriaty.vuitton.module.novel.downloader;
 
+import com.moriaty.vuitton.bean.novel.local.NovelChapterWithContent;
 import com.moriaty.vuitton.bean.novel.network.*;
-import com.moriaty.vuitton.dao.model.Novel;
-import com.moriaty.vuitton.dao.model.NovelChapter;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
 import com.moriaty.vuitton.util.NovelUtil;
 import com.moriaty.vuitton.util.RandomUtil;
 import jakarta.annotation.Nonnull;
@@ -211,10 +211,12 @@ public abstract class BaseNovelDownloader {
         }
     }
 
-    public NovelNetworkFixDownloadResult fixDownload(Novel novel, List<NovelChapter> existedChapterList, int fixNum) {
+    public NovelNetworkFixDownloadResult fixDownload(Novel novel, List<NovelChapterWithContent> existedChapterList,
+                                                     int fixNum) {
         List<NovelNetworkContent> fixContentList = new ArrayList<>();
         List<NovelNetworkContent> failureContentList = new ArrayList<>();
-        List<Integer> existedIndexList = existedChapterList.stream().map(NovelChapter::getIndex).toList();
+        List<Integer> existedIndexList = existedChapterList.stream().map(chapter -> chapter.getChapter().getIndex())
+                .toList();
         List<NovelNetworkChapter> chapterList = findChapterList(novel.getDownloaderCatalogueUrl());
         List<NovelNetworkChapter> missingChapterList = chapterList.stream()
                 .filter(chapter -> !existedIndexList.contains(chapter.getIndex()))

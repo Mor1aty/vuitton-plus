@@ -1,11 +1,11 @@
 package com.moriaty.vuitton.util;
 
+import com.moriaty.vuitton.bean.novel.local.NovelChapterWithContent;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkContent;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkInfo;
 import com.moriaty.vuitton.bean.novel.network.resolve.DocResolveAction;
 import com.moriaty.vuitton.bean.novel.network.resolve.DocResolveExecAction;
 import com.moriaty.vuitton.constant.Constant;
-import com.moriaty.vuitton.dao.model.NovelChapter;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -95,14 +95,16 @@ public class NovelUtil {
         }
     }
 
-    public static File writeToFile(String name, String author, String intro, List<NovelChapter> chapterList) {
+    public static File writeToFile(String name, String author, String intro,
+                                   List<NovelChapterWithContent> chapterContentList) {
         try {
             File file = NovelUtil.writeInfoToFile(name, author, intro);
             try (FileWriter fileWriter = new FileWriter(file, true)) {
-                for (NovelChapter chapter : chapterList) {
-                    NovelUtil.writeContentToFile(fileWriter, chapter.getIndex(), new NovelNetworkContent()
-                            .setTitle(chapter.getTitle())
-                            .setContent(chapter.getContent()));
+                for (NovelChapterWithContent chapterContent : chapterContentList) {
+                    NovelUtil.writeContentToFile(fileWriter, chapterContent.getChapter().getIndex(),
+                            new NovelNetworkContent()
+                                    .setTitle(chapterContent.getChapter().getTitle())
+                                    .setContent(chapterContent.getContent().getContent()));
                 }
             }
             log.info("{} 写入文件完成", name);
@@ -193,7 +195,7 @@ public class NovelUtil {
         if (intro == null) {
             return null;
         }
-        info.setIntro(intro);
+        info.setIntro(StringUtils.hasText(intro.trim()) ? intro.trim() : "暂无");
         String img = findTextFromDoc(startDom, imgAction);
         if (img == null) {
             return null;

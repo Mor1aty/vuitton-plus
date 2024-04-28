@@ -1,7 +1,7 @@
-package com.moriaty.vuitton.dao.mapper;
+package com.moriaty.vuitton.dao.mysql.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.moriaty.vuitton.dao.model.Novel;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
 
 /**
  * <p>

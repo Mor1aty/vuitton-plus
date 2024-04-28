@@ -1,7 +1,7 @@
 package com.moriaty.vuitton.bean.video;
 
-import com.moriaty.vuitton.dao.model.Video;
-import com.moriaty.vuitton.dao.model.VideoEpisode;
+import com.moriaty.vuitton.dao.mysql.model.Video;
+import com.moriaty.vuitton.dao.mysql.model.VideoEpisode;
 import lombok.Data;
 import lombok.experimental.Accessors;
 

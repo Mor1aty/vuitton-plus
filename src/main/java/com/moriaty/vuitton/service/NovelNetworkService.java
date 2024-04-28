@@ -12,11 +12,14 @@ import com.moriaty.vuitton.bean.novel.network.resp.ActuatorSnapshotInfo;
 import com.moriaty.vuitton.bean.novel.network.resp.ActuatorSnapshotInfos;
 import com.moriaty.vuitton.bean.novel.network.resp.FixDownloadResp;
 import com.moriaty.vuitton.constant.Constant;
-import com.moriaty.vuitton.dao.mapper.ActuatorMapper;
-import com.moriaty.vuitton.dao.mapper.NovelChapterMapper;
-import com.moriaty.vuitton.dao.mapper.NovelMapper;
-import com.moriaty.vuitton.dao.model.Novel;
-import com.moriaty.vuitton.dao.model.NovelChapter;
+import com.moriaty.vuitton.dao.mongo.impl.MongoNovelChapterContentImpl;
+import com.moriaty.vuitton.dao.mongo.model.MongoNovelChapterContent;
+import com.moriaty.vuitton.dao.mysql.mapper.ActuatorMapper;
+import com.moriaty.vuitton.dao.mysql.mapper.NovelChapterMapper;
+import com.moriaty.vuitton.dao.mysql.mapper.NovelMapper;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
+import com.moriaty.vuitton.dao.mysql.model.NovelChapter;
+import com.moriaty.vuitton.dao.mysql.model.Actuator;
 import com.moriaty.vuitton.library.actuator.BaseActuator;
 import com.moriaty.vuitton.library.actuator.ActuatorManager;
 import com.moriaty.vuitton.library.actuator.ActuatorMeta;
@@ -73,6 +76,8 @@ public class NovelNetworkService {
     private final ActuatorMapper actuatorMapper;
 
     private final StringRedisTemplate stringRedisTemplate;
+
+    private final MongoNovelChapterContentImpl mongoNovelChapterContentImpl;
 
     @Value("${file-server.novel.default-novel-img}")
     private String defaultNovelImg;
@@ -136,12 +141,19 @@ public class NovelNetworkService {
             return WrapMapper.failure("存储失败");
         }
         List<NovelChapter> chapterList = downloadResult.getContentList().stream()
-                .map(content -> new NovelChapter()
-                        .setNovel(novel.getId())
-                        .setIndex(content.getIndex())
-                        .setTitle(content.getTitle())
-                        .setContent(content.getContent())
-                        .setContentHtml(content.getContentHtml()))
+                .map(content -> {
+                    MongoNovelChapterContent novelChapterContent = new MongoNovelChapterContent()
+                            .setNovelName(novel.getName())
+                            .setChapterTitle(content.getTitle())
+                            .setContent(content.getContent())
+                            .setContentHtml(content.getContentHtml());
+                    mongoNovelChapterContentImpl.save(novelChapterContent);
+                    return new NovelChapter()
+                            .setNovel(novel.getId())
+                            .setIndex(content.getIndex())
+                            .setTitle(content.getTitle())
+                            .setContentId(novelChapterContent.getId());
+                })
                 .toList();
         novelChapterMapper.batchInsert(chapterList);
         return WrapMapper.okStringData(ServerInfo.INFO.getFileServerUrl() + novel.getFileUrl());
@@ -155,7 +167,7 @@ public class NovelNetworkService {
         NovelLocalFullInfo novelFullInfo = novelFullInfoOptional.get();
         Optional<NovelNetworkFixDownloadResult> optional =
                 novelNetworkModule.fixDownload(novelFullInfo.getNovelDownloader(),
-                        novelFullInfo.getNovel(), novelFullInfo.getChapterList(),
+                        novelFullInfo.getNovel(), novelFullInfo.getChapterContentList(),
                         req.getFixNum() != null && req.getFixNum() >= 0 ? req.getFixNum() : -1);
         if (optional.isEmpty()) {
             return WrapMapper.failure("修补下载失败");
@@ -163,12 +175,18 @@ public class NovelNetworkService {
         NovelNetworkFixDownloadResult fixDownloadResult = optional.get();
         if (!fixDownloadResult.getFixContentList().isEmpty()) {
             List<NovelChapter> chapterList = fixDownloadResult.getFixContentList().stream()
-                    .map(content -> new NovelChapter()
-                            .setNovel(novelFullInfo.getNovel().getId())
-                            .setIndex(content.getIndex())
-                            .setTitle(content.getTitle())
-                            .setContent(content.getContent())
-                            .setContentHtml(content.getContentHtml()))
+                    .map(content -> {
+                        MongoNovelChapterContent novelChapterContent = new MongoNovelChapterContent()
+                                .setNovelName(novelFullInfo.getNovel().getName())
+                                .setChapterTitle(content.getTitle())
+                                .setContent(content.getContent())
+                                .setContentHtml(content.getContentHtml());
+                        return new NovelChapter()
+                                .setNovel(novelFullInfo.getNovel().getId())
+                                .setIndex(content.getIndex())
+                                .setTitle(content.getTitle())
+                                .setContentId(novelChapterContent.getId());
+                    })
                     .toList();
             novelChapterMapper.batchInsert(chapterList);
         }
@@ -198,7 +216,7 @@ public class NovelNetworkService {
         }
         NovelLocalFullInfo novelFullInfo = novelFullInfoOptional.get();
         Optional<List<NovelNetworkChapter>> optional = novelNetworkModule.checkMissing(
-                novelFullInfo.getNovelDownloader(), novelFullInfo.getNovel(), novelFullInfo.getChapterList());
+                novelFullInfo.getNovelDownloader(), novelFullInfo.getNovel(), novelFullInfo.getChapterContentList());
         return optional.map(WrapMapper::ok).orElseGet(() -> WrapMapper.failure("检查缺失失败"));
     }
 
@@ -212,13 +230,19 @@ public class NovelNetworkService {
                 req.isParallel(), stringRedisTemplate,
                 Constant.Actuator.REDIS_PREFIX_ACTUATOR_NOVEL_DOWNLOAD + actuatorId + ":",
                 Constant.Actuator.REDIS_TTL_ACTUATOR_NOVEL_DOWNLOAD, novelDownloader, defaultNovelImg,
-                (novel, chapterList) -> {
+                (novel, chapterContentList) -> {
                     novel.setCreateTime(LocalDateTime.now());
                     int effectRow = novelMapper.insert(novel);
                     if (effectRow != 1) {
                         return false;
                     }
-                    chapterList = chapterList.stream().map(chapter -> chapter.setNovel(novel.getId())).toList();
+                    List<NovelChapter> chapterList = chapterContentList.stream().map(chapter -> {
+                        MongoNovelChapterContent content = chapter.getContent()
+                                .setNovelName(novel.getName())
+                                .setChapterTitle(chapter.getChapter().getTitle());
+                        mongoNovelChapterContentImpl.save(content);
+                        return chapter.getChapter().setNovel(novel.getId()).setContentId(content.getId());
+                    }).toList();
                     novelChapterMapper.batchInsert(chapterList);
                     return true;
                 },
@@ -235,7 +259,7 @@ public class NovelNetworkService {
                             log.error("写入执行器步骤数据异常", e);
                         }
                     }
-                    actuatorMapper.insert(new com.moriaty.vuitton.dao.model.Actuator()
+                    actuatorMapper.insert(new Actuator()
                             .setId(actuatorSnapshot.getMeta().getId())
                             .setMeta(JSON.toJSONString(actuatorSnapshot.getMeta()))
                             .setStepList(JSON.toJSONString(actuatorSnapshot.getStepList()))
@@ -254,7 +278,7 @@ public class NovelNetworkService {
             if (actuator != null) {
                 return WrapMapper.ok(List.of(ActuatorSnapshotInfos.runningActuatorSnapshot(actuator.snapshot())));
             }
-            com.moriaty.vuitton.dao.model.Actuator storageActuator = actuatorMapper.selectById(req.getId());
+            Actuator storageActuator = actuatorMapper.selectById(req.getId());
             if (storageActuator == null) {
                 return WrapMapper.ok(List.of());
             }
@@ -264,8 +288,9 @@ public class NovelNetworkService {
         List<ActuatorSnapshotInfo> snapshotInfoList = new ArrayList<>();
         runningActuatorMap.forEach((id, actuator) ->
                 snapshotInfoList.add(ActuatorSnapshotInfos.runningActuatorSnapshot(actuator.snapshot())));
-        List<com.moriaty.vuitton.dao.model.Actuator> storageActuatorList =
-                actuatorMapper.selectList(null);
+        List<Actuator> storageActuatorList =
+                actuatorMapper.selectList(new LambdaQueryWrapper<Actuator>()
+                        .orderByDesc(Actuator::getStartTime));
         storageActuatorList.forEach(storageActuator ->
                 snapshotInfoList.add(ActuatorSnapshotInfos.storageActuatorSnapshot(storageActuator)));
         return WrapMapper.ok(snapshotInfoList);
@@ -276,7 +301,7 @@ public class NovelNetworkService {
         if (actuator != null) {
             return WrapMapper.ok(actuator.snapshotStepData());
         }
-        com.moriaty.vuitton.dao.model.Actuator storageActuator = actuatorMapper.selectById(req.getId());
+        Actuator storageActuator = actuatorMapper.selectById(req.getId());
         if (storageActuator == null) {
             return WrapMapper.failure("执行器不存在");
         }

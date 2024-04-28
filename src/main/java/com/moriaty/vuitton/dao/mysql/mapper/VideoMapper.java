@@ -1,8 +1,8 @@
-package com.moriaty.vuitton.dao.mapper;
+package com.moriaty.vuitton.dao.mysql.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.moriaty.vuitton.bean.video.VideoSearchInfo;
-import com.moriaty.vuitton.dao.model.Video;
+import com.moriaty.vuitton.dao.mysql.model.Video;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 

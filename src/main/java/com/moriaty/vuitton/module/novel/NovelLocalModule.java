@@ -1,8 +1,9 @@
 package com.moriaty.vuitton.module.novel;
 
+import com.moriaty.vuitton.bean.novel.local.NovelChapterWithContent;
 import com.moriaty.vuitton.bean.novel.local.NovelLocalAroundChapter;
-import com.moriaty.vuitton.dao.model.Novel;
-import com.moriaty.vuitton.dao.model.NovelChapter;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
+import com.moriaty.vuitton.dao.mysql.model.NovelChapter;
 import com.moriaty.vuitton.module.Module;
 import com.moriaty.vuitton.module.ModuleFactory;
 import com.moriaty.vuitton.util.NovelUtil;
@@ -46,8 +47,8 @@ public class NovelLocalModule implements InitializingBean {
         return duplicatesList.isEmpty() ? Optional.empty() : Optional.of(duplicatesList);
     }
 
-    public Optional<File> reparseFile(Novel novel, List<NovelChapter> chapterList) {
-        File file = NovelUtil.writeToFile(novel.getName(), novel.getAuthor(), novel.getIntro(), chapterList);
+    public Optional<File> reparseFile(Novel novel, List<NovelChapterWithContent> chapterContentList) {
+        File file = NovelUtil.writeToFile(novel.getName(), novel.getAuthor(), novel.getIntro(), chapterContentList);
         if (file == null) {
             log.error("{} 重新解析小说文件失败", novel.getName());
             return Optional.empty();

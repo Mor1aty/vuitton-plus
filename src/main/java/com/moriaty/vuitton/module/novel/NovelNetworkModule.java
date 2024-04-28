@@ -1,8 +1,8 @@
 package com.moriaty.vuitton.module.novel;
 
+import com.moriaty.vuitton.bean.novel.local.NovelChapterWithContent;
 import com.moriaty.vuitton.bean.novel.network.*;
-import com.moriaty.vuitton.dao.model.Novel;
-import com.moriaty.vuitton.dao.model.NovelChapter;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
 import com.moriaty.vuitton.module.Module;
 import com.moriaty.vuitton.module.ModuleFactory;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
@@ -66,7 +66,7 @@ public class NovelNetworkModule implements InitializingBean {
     }
 
     public Optional<NovelNetworkFixDownloadResult> fixDownload(@Nonnull BaseNovelDownloader novelDownloader, Novel novel,
-                                                               List<NovelChapter> existedChapterList, int fixNum) {
+                                                               List<NovelChapterWithContent> existedChapterList, int fixNum) {
         NovelNetworkFixDownloadResult result = novelDownloader.fixDownload(novel, existedChapterList, fixNum);
         if (result == null) {
             log.error("修补下载小说失败");
@@ -76,8 +76,9 @@ public class NovelNetworkModule implements InitializingBean {
     }
 
     public Optional<List<NovelNetworkChapter>> checkMissing(@Nonnull BaseNovelDownloader novelDownloader, Novel novel,
-                                                            List<NovelChapter> existedChapterList) {
-        List<Integer> existedIndexList = existedChapterList.stream().map(NovelChapter::getIndex).toList();
+                                                            List<NovelChapterWithContent> existedChapterList) {
+        List<Integer> existedIndexList = existedChapterList.stream().map(chapter -> chapter.getChapter().getIndex())
+                .toList();
         List<NovelNetworkChapter> chapterList = novelDownloader.findChapterList(novel.getDownloaderCatalogueUrl());
         List<NovelNetworkChapter> missingChapterList = chapterList.stream()
                 .filter(chapter -> !existedIndexList.contains(chapter.getIndex()))

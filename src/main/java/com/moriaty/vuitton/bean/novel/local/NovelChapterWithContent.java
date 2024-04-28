@@ -7,21 +7,17 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 本地小说环绕章节
+ * 带内容的小说章节
  * </p>
  *
  * @author Moriaty
- * @since 2024/2/2 下午11:16
+ * @since 2024/4/28 上午8:46
  */
 @Data
 @Accessors(chain = true)
-public class NovelLocalAroundChapter {
+public class NovelChapterWithContent {
 
     private NovelChapter chapter;
-
-    private NovelChapter preChapter;
-
-    private NovelChapter nextChapter;
 
     private MongoNovelChapterContent content;
 

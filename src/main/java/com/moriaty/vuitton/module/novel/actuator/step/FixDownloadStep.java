@@ -1,9 +1,11 @@
 package com.moriaty.vuitton.module.novel.actuator.step;
 
 import com.alibaba.fastjson2.TypeReference;
+import com.moriaty.vuitton.bean.novel.local.NovelChapterWithContent;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkFixDownloadResult;
-import com.moriaty.vuitton.dao.model.Novel;
-import com.moriaty.vuitton.dao.model.NovelChapter;
+import com.moriaty.vuitton.dao.mongo.model.MongoNovelChapterContent;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
+import com.moriaty.vuitton.dao.mysql.model.NovelChapter;
 import com.moriaty.vuitton.library.actuator.step.BaseRepeatStep;
 import com.moriaty.vuitton.library.actuator.step.StepMeta;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
@@ -56,14 +58,14 @@ public class FixDownloadStep extends BaseRepeatStep {
             return true;
         }
         Integer missingChapterNum = super.getStepData(KEY_MISSING_CHAPTER_NUM, new TypeReference<>() {
-                });
+        });
         return missingChapterNum != null && missingChapterNum == 0;
     }
 
     @Override
     protected void repeatRunContent() {
 
-        List<NovelChapter> chapterList = super.getStepData("chapterList", new TypeReference<>() {
+        List<NovelChapterWithContent> chapterList = super.getStepData("chapterList", new TypeReference<>() {
         });
 
         NovelNetworkFixDownloadResult fixDownloadResult = novelDownloader.fixDownload(novel, chapterList, -1);
@@ -75,13 +77,15 @@ public class FixDownloadStep extends BaseRepeatStep {
         super.putStepData(KEY_MISSING_CHAPTER_NUM, fixDownloadResult.getMissingChapterList().size());
         if (!fixDownloadResult.getFixContentList().isEmpty()) {
             chapterList.addAll(fixDownloadResult.getFixContentList().stream()
-                    .map(content -> new NovelChapter()
-                            .setIndex(content.getIndex())
-                            .setTitle(content.getTitle())
-                            .setContent(content.getContent())
-                            .setContentHtml(content.getContentHtml()))
-                    .toList());
-            chapterList.sort(Comparator.comparingInt(NovelChapter::getIndex));
+                    .map(content -> new NovelChapterWithContent()
+                            .setChapter(new NovelChapter()
+                                    .setIndex(content.getIndex())
+                                    .setTitle(content.getTitle()))
+                            .setContent(new MongoNovelChapterContent()
+                                    .setContent(content.getContent())
+                                    .setContentHtml(content.getContentHtml()))
+                    ).toList());
+            chapterList.sort(Comparator.comparingInt(chapter -> chapter.getChapter().getIndex()));
             super.putStepData("chapterList", chapterList);
         }
     }

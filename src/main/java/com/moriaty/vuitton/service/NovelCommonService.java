@@ -1,11 +1,14 @@
 package com.moriaty.vuitton.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.moriaty.vuitton.bean.novel.local.NovelChapterWithContent;
 import com.moriaty.vuitton.bean.novel.local.NovelLocalFullInfo;
-import com.moriaty.vuitton.dao.mapper.NovelChapterMapper;
-import com.moriaty.vuitton.dao.mapper.NovelMapper;
-import com.moriaty.vuitton.dao.model.Novel;
-import com.moriaty.vuitton.dao.model.NovelChapter;
+import com.moriaty.vuitton.dao.mongo.impl.MongoNovelChapterContentImpl;
+import com.moriaty.vuitton.dao.mongo.model.MongoNovelChapterContent;
+import com.moriaty.vuitton.dao.mysql.mapper.NovelChapterMapper;
+import com.moriaty.vuitton.dao.mysql.mapper.NovelMapper;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
+import com.moriaty.vuitton.dao.mysql.model.NovelChapter;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.util.NovelUtil;
 import lombok.AllArgsConstructor;
@@ -32,6 +35,8 @@ public class NovelCommonService {
 
     private final NovelChapterMapper novelChapterMapper;
 
+    private final MongoNovelChapterContentImpl mongoNovelChapterContentImpl;
+
     public Optional<NovelLocalFullInfo> findFullInfo(int id) {
         Novel novel = novelMapper.selectById(id);
         if (novel == null) {
@@ -41,12 +46,18 @@ public class NovelCommonService {
         if (novelDownloader == null) {
             return Optional.empty();
         }
-        List<NovelChapter> chapterList = novelChapterMapper.selectList(new LambdaQueryWrapper<NovelChapter>()
+        List<NovelChapterWithContent> chapterContentList = novelChapterMapper.selectList(new LambdaQueryWrapper<NovelChapter>()
                 .eq(NovelChapter::getNovel, novel.getId())
-                .orderByAsc(NovelChapter::getIndex));
+                .orderByAsc(NovelChapter::getIndex)).stream().map(chapter -> {
+            MongoNovelChapterContent content = mongoNovelChapterContentImpl.getById(chapter.getContentId());
+            return new NovelChapterWithContent()
+                    .setChapter(chapter)
+                    .setContent(content);
+        }).toList();
         return Optional.of(new NovelLocalFullInfo()
                 .setNovel(novel)
-                .setChapterList(chapterList));
+                .setChapterContentList(chapterContentList)
+                .setNovelDownloader(novelDownloader));
     }
 
 }

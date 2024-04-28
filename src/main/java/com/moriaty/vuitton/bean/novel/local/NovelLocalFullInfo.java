@@ -1,7 +1,6 @@
 package com.moriaty.vuitton.bean.novel.local;
 
-import com.moriaty.vuitton.dao.model.Novel;
-import com.moriaty.vuitton.dao.model.NovelChapter;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -22,7 +21,7 @@ public class NovelLocalFullInfo {
 
     private Novel novel;
 
-    private List<NovelChapter> chapterList;
+    private List<NovelChapterWithContent> chapterContentList;
 
     private BaseNovelDownloader novelDownloader;
 

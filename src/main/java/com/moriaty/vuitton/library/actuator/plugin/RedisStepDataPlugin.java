@@ -2,6 +2,7 @@ package com.moriaty.vuitton.library.actuator.plugin;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.moriaty.vuitton.library.actuator.ActuatorMeta;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.StringRedisConnection;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -18,6 +19,7 @@ import java.util.*;
  * @author Moriaty
  * @since 2024/4/9 上午4:20
  */
+@Slf4j
 public class RedisStepDataPlugin implements StepDataPlugin {
 
     private final StringRedisTemplate stringRedisTemplate;

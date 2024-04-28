@@ -1,7 +1,6 @@
 package com.moriaty.vuitton.util;
 
 import com.baomidou.mybatisplus.generator.FastAutoGenerator;
-import com.baomidou.mybatisplus.generator.config.TemplateType;
 import com.baomidou.mybatisplus.generator.keywords.MySqlKeyWordsHandler;
 
 /**
@@ -34,12 +33,13 @@ public class MyBatisPlusGenerator {
                         .author("Moriaty")
                         .commentDate("yyyy-MM-dd HH:mm:ss"))
                 .packageConfig(builder -> builder
-                        .parent("com.moriaty.vuitton.dao")
+                        .parent("com.moriaty.vuitton.dao.mysql")
                         .entity("model"))
-                .templateConfig(builder -> builder
-                        .disable(TemplateType.XML, TemplateType.MAPPER, TemplateType.SERVICE,
-                                TemplateType.SERVICE_IMPL, TemplateType.CONTROLLER))
                 .strategyConfig(builder -> builder.addInclude("")
+                        .controllerBuilder().disable()
+                        .serviceBuilder().disable()
+                        .mapperBuilder().disable()
+                        .disableMapperXml()
                         .entityBuilder().enableLombok().enableChainModel()
                         .enableFileOverride().disableSerialVersionUID())
                 .execute();

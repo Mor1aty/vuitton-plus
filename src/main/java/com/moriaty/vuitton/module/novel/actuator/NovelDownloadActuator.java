@@ -1,11 +1,8 @@
 package com.moriaty.vuitton.module.novel.actuator;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
-import com.alibaba.fastjson2.TypeReference;
+import com.moriaty.vuitton.bean.novel.local.NovelChapterWithContent;
 import com.moriaty.vuitton.constant.Constant;
-import com.moriaty.vuitton.dao.model.Novel;
-import com.moriaty.vuitton.dao.model.NovelChapter;
+import com.moriaty.vuitton.dao.mysql.model.Novel;
 import com.moriaty.vuitton.library.actuator.BaseActuator;
 import com.moriaty.vuitton.library.actuator.ActuatorMeta;
 import com.moriaty.vuitton.library.actuator.ActuatorSnapshot;
@@ -53,11 +50,9 @@ public class NovelDownloadActuator extends BaseActuator {
 
     private final BaseNovelDownloader novelDownloader;
 
-    private final BiPredicate<Novel, List<NovelChapter>> storageStepStrategy;
+    private final BiPredicate<Novel, List<NovelChapterWithContent>> storageStepStrategy;
 
     private final BiConsumer<ActuatorSnapshot, Map<String, Map<String, Object>>> beforeEndStrategy;
-
-    private static final String KEY_CHAPTER_LIST = "chapter_list";
 
     public NovelDownloadActuator(NovelDownloadActuatorParam param) {
         this.id = param.id();
@@ -98,29 +93,8 @@ public class NovelDownloadActuator extends BaseActuator {
 
     @Override
     public Map<String, Map<String, Object>> snapshotStepData() {
-        Map<String, JSONObject> stepData = super.stepDataPlugin.snapshotStepData();
-        HashMap<String, Map<String, Object>> snapshot = HashMap.newHashMap(stepData.size());
-        stepData.forEach((step, data) -> {
-            List<NovelChapter> chapterList = data.getObject(KEY_CHAPTER_LIST, new TypeReference<>() {
-            });
-            if (chapterList != null) {
-                chapterList = chapterList.stream().map(chapter -> new NovelChapter()
-                        .setIndex(chapter.getIndex())
-                        .setTitle(chapter.getTitle())).toList();
-                data.put(KEY_CHAPTER_LIST, chapterList);
-            }
-            snapshot.put(step, data);
-        });
+        Map<String, Map<String, Object>> snapshot = new HashMap<>(super.stepDataPlugin.snapshotStepData());
         Map<String, Object> currentData = currentStep.snapshotStepData();
-        Object chapterList = currentData.get(KEY_CHAPTER_LIST);
-        if (chapterList instanceof List<?> list) {
-            List<NovelChapter> novelChapterList = JSON.parseObject(JSON.toJSONString(list), new TypeReference<>() {
-            });
-            chapterList = novelChapterList.stream().map(chapter -> new NovelChapter()
-                    .setIndex(chapter.getIndex())
-                    .setTitle(chapter.getTitle())).toList();
-            currentData.put(KEY_CHAPTER_LIST, chapterList);
-        }
         snapshot.put(getProgress().getCurrentStepIndex() + "-" + currentStep.getMeta().getName(), currentData);
         return snapshot;
     }

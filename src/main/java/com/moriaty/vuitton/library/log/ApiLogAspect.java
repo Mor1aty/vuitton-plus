@@ -48,11 +48,7 @@ public class ApiLogAspect {
         log.info("Api: {} {}, Req: {}", request.getMethod().toUpperCase(),
                 request.getRequestURI(), JSON.toJSONString(param));
         Object resp = point.proceed();
-        if (resp instanceof Wrapper) {
-            log.info("Api Resp: {}", JSON.toJSONString(resp));
-        } else {
-            log.info("Api Resp: {}", resp.getClass());
-        }
+        log.info("Api Resp: {}", resp instanceof Wrapper ? JSON.toJSONString(resp) : resp.getClass());
         return resp;
     }
 }

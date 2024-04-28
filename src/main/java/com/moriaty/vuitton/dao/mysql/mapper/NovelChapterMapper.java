@@ -1,7 +1,7 @@
-package com.moriaty.vuitton.dao.mapper;
+package com.moriaty.vuitton.dao.mysql.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.moriaty.vuitton.dao.model.NovelChapter;
+import com.moriaty.vuitton.dao.mysql.model.NovelChapter;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 
@@ -24,11 +24,10 @@ public interface NovelChapterMapper extends BaseMapper<NovelChapter> {
      */
     @Insert("""
             <script>
-                INSERT INTO novel_chapter(novel, `index`, title, content, content_html)
+                INSERT INTO novel_chapter(novel, `index`, title, content_id)
                 VALUES
                 <foreach collection='chapterList' item='chapter' separator=','>
-                    (#{chapter.novel}, #{chapter.index}, #{chapter.title},
-                    #{chapter.content}, #{chapter.contentHtml})
+                    (#{chapter.novel}, #{chapter.index}, #{chapter.title}, #{chapter.contentId})
                 </foreach>
             </script>""")
     void batchInsert(@Param("chapterList") List<NovelChapter> chapterList);

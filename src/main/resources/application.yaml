@@ -23,6 +23,14 @@ spring:
           enabled: true
           max-active: 20
           max-idle: 30
+mongo-plus:
+  data:
+    mongodb:
+      host: ${server.deploy-ip}
+      port: 27017
+      database: vuitton_plus
+      authenticationDatabase: admin
+      connectTimeoutMS: 50000
 logging:
   level:
     com.moriaty.vuitton.dao.mapper: INFO

@@ -3,7 +3,7 @@ package com.moriaty.vuitton.bean.novel.network.resp;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
-import com.moriaty.vuitton.dao.model.Actuator;
+import com.moriaty.vuitton.dao.mysql.model.Actuator;
 import com.moriaty.vuitton.library.actuator.ActuatorSnapshot;
 import com.moriaty.vuitton.module.novel.actuator.NovelDownloadActuatorMeta;
 
