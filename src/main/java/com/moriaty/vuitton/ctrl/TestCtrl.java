@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 /**
  * <p>
  * 测试 Ctrl
@@ -21,8 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class TestCtrl {
 
-    @GetMapping("testActuator")
-    public String testActuator() {
-        return "success";
+    @GetMapping("hello")
+    public String hello() {
+        return "hello world";
     }
+
 }
