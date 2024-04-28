@@ -26,6 +26,10 @@ import java.util.Map;
 @Slf4j
 public abstract class BaseActuator {
 
+    public static final int RESULT_SUCCESS = 1;
+
+    public static final int RESULT_FAILURE = 2;
+
     @Getter
     private boolean init;
 
@@ -46,6 +50,8 @@ public abstract class BaseActuator {
     private String lastStepDataKey = null;
 
     protected StepDataPlugin stepDataPlugin;
+
+    private int result;
 
     /**
      * 初始化 meta
@@ -119,7 +125,8 @@ public abstract class BaseActuator {
                 .setMeta(meta)
                 .setStepList(stepList.stream().map(BaseStep::getMeta).toList())
                 .setProgress(getProgress())
-                .setInterrupt(interrupt);
+                .setInterrupt(interrupt)
+                .setResult(result);
     }
 
     public void interrupt() {
@@ -149,17 +156,19 @@ public abstract class BaseActuator {
                 boolean success = step.run();
                 lastStepDataKey = stepIndex + "-" + step.getMeta().getName();
                 stepDataPlugin.storeStepData(lastStepDataKey, step.exportStepData());
-                if (handleRunResult(success)) {
+                if (stepResultExit(success)) {
+                    result = RESULT_FAILURE;
                     break;
                 }
+                result = RESULT_SUCCESS;
             }
         } finally {
-            stepDataPlugin.clearStepData();
             beforeEnd();
+            stepDataPlugin.clearStepData();
         }
     }
 
-    private boolean handleRunResult(boolean success) {
+    private boolean stepResultExit(boolean success) {
         if (success) {
             log.info("{} 执行 {} 成功", mark, progress.getCurrentStep().getName());
         } else {

@@ -29,7 +29,8 @@ public class ActuatorSnapshotInfos {
                 .setStepList(snapshot.getStepList())
                 .setRunningProgress(snapshot.getProgress())
                 .setInterrupt(snapshot.isInterrupt())
-                .setStartTime(snapshot.getMeta().getStartTime());
+                .setStartTime(snapshot.getMeta().getStartTime())
+                .setResult(snapshot.getResult());
     }
 
     public static ActuatorSnapshotInfo storageActuatorSnapshot(Actuator storageActuator) {
@@ -40,6 +41,7 @@ public class ActuatorSnapshotInfos {
                 }))
                 .setInterrupt(storageActuator.getInterrupt())
                 .setStartTime(storageActuator.getStartTime())
-                .setEndTime(storageActuator.getEndTime());
+                .setEndTime(storageActuator.getEndTime())
+                .setResult(storageActuator.getResult());
     }
 }

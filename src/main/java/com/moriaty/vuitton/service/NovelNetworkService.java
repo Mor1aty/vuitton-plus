@@ -266,7 +266,8 @@ public class NovelNetworkService {
                             .setStepDataUrl(fileUrl != null ? fileUrl : "")
                             .setInterrupt(actuatorSnapshot.isInterrupt())
                             .setStartTime(actuatorSnapshot.getMeta().getStartTime())
-                            .setEndTime(LocalDateTime.now()));
+                            .setEndTime(LocalDateTime.now())
+                            .setResult(actuatorSnapshot.getResult()));
                 }));
         ActuatorManager.runActuator(actuator);
         return WrapMapper.ok(actuator.getMeta());

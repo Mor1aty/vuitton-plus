@@ -35,4 +35,6 @@ public class ActuatorSnapshotInfo {
 
     private LocalDateTime endTime;
 
+    private Integer result;
+
 }

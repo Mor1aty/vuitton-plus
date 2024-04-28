@@ -1,10 +1,9 @@
 package com.moriaty.vuitton.dao.mysql.model;
 
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
-import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
  * </p>
  *
  * @author Moriaty
- * @since 2024-04-08 17:58:39
+ * @since 2024-04-28 22:46:10
  */
 @Getter
 @Setter
@@ -32,4 +31,6 @@ public class Actuator {
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
+
+    private Integer result;
 }

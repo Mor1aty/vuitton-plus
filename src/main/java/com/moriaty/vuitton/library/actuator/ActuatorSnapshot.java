@@ -26,4 +26,6 @@ public class ActuatorSnapshot {
 
     private boolean interrupt;
 
+    private Integer result;
+
 }
