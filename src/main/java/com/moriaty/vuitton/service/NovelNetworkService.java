@@ -287,13 +287,18 @@ public class NovelNetworkService {
         }
         Map<String, BaseActuator> runningActuatorMap = ActuatorManager.snapshotRunningActuator();
         List<ActuatorSnapshotInfo> snapshotInfoList = new ArrayList<>();
-        runningActuatorMap.forEach((id, actuator) ->
-                snapshotInfoList.add(ActuatorSnapshotInfos.runningActuatorSnapshot(actuator.snapshot())));
+        for (BaseActuator actuator : runningActuatorMap.values()) {
+            snapshotInfoList.add(ActuatorSnapshotInfos.runningActuatorSnapshot(actuator.snapshot()));
+        }
         List<Actuator> storageActuatorList =
-                actuatorMapper.selectList(new LambdaQueryWrapper<Actuator>()
-                        .orderByDesc(Actuator::getStartTime));
-        storageActuatorList.forEach(storageActuator ->
-                snapshotInfoList.add(ActuatorSnapshotInfos.storageActuatorSnapshot(storageActuator)));
+                actuatorMapper.selectList(new LambdaQueryWrapper<Actuator>().orderByDesc(Actuator::getStartTime));
+        for (Actuator actuator : storageActuatorList) {
+            snapshotInfoList.add(ActuatorSnapshotInfos.storageActuatorSnapshot(actuator));
+        }
+        int actuatorNumLimit = 8;
+        if (snapshotInfoList.size() > actuatorNumLimit) {
+            snapshotInfoList = snapshotInfoList.subList(0, actuatorNumLimit);
+        }
         return WrapMapper.ok(snapshotInfoList);
     }
 

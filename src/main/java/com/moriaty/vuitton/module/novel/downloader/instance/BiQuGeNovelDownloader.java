@@ -6,7 +6,6 @@ import com.moriaty.vuitton.bean.novel.network.NovelNetworkInfo;
 import com.moriaty.vuitton.constant.Constant;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderMeta;
-import com.moriaty.vuitton.util.NovelUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -35,8 +34,7 @@ public class BiQuGeNovelDownloader extends BaseNovelDownloader {
             .setWebName("笔奇部")
             .setMark("BiQuGe")
             .setWebsite("https://www.biqubu1.com")
-            .setContentBaseUrl("https://www.biqubu1.com/")
-            .setSearchBaseUrl("https://www.1q1m.com/s?q=");
+            .setContentBaseUrl("https://www.biqubu1.com/");
 
     @Override
     public NovelDownloaderMeta getMeta() {
@@ -107,7 +105,7 @@ public class BiQuGeNovelDownloader extends BaseNovelDownloader {
                 return chapterList;
             }
             Elements domDdList = domList.getElementsByTag("dd");
-            return exploreChapterList(domDdList, "");
+            return exploreChapterList(domDdList, "prefix/");
         } catch (IOException e) {
             log.error("获取章节列表异常", e);
             return Collections.emptyList();
@@ -117,8 +115,7 @@ public class BiQuGeNovelDownloader extends BaseNovelDownloader {
     @Override
     public NovelNetworkContent findContent(String title, String contentUrl) {
         try {
-            Document doc = NovelUtil.findDoc(meta.getContentBaseUrl() + contentUrl);
-            return exploreContent(title, doc, "content1");
+            return exploreContent(title, meta.getContentBaseUrl() + contentUrl, "content1");
         } catch (IOException e) {
             return new NovelNetworkContent()
                     .setErrorMsg("获取小说内容发生异常, " + e.getLocalizedMessage());

@@ -92,13 +92,20 @@ public abstract class BaseNovelDownloader {
         return chapterList;
     }
 
-    protected NovelNetworkContent exploreContent(String title, Document doc, String contentDomId) {
+    protected NovelNetworkContent exploreContent(String title, String contentUrl, String contentDomId) throws IOException {
+        Document doc = NovelUtil.findDoc(contentUrl);
+        return exploreContent(title, doc, contentDomId);
+    }
+
+    protected NovelNetworkContent exploreContent(String title, Element doc, String contentDomId)
+            throws IOException {
         try {
             Thread.sleep(Duration.ofSeconds(RandomUtil.randomInt(0, 2)));
         } catch (InterruptedException e) {
             log.error("休眠被打断", e);
             Thread.currentThread().interrupt();
         }
+
         Element content = doc.getElementById(contentDomId);
         if (content == null) {
             return new NovelNetworkContent()

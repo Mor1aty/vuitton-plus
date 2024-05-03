@@ -1,10 +1,13 @@
 package com.moriaty.vuitton.ctrl;
 
+import com.moriaty.vuitton.library.wrap.WrapMapper;
+import com.moriaty.vuitton.library.wrap.Wrapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 
 /**
  * <p>
@@ -21,8 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestCtrl {
 
     @GetMapping("hello")
-    public String hello() {
-        return "hello world";
+    public Wrapper<String> hello() {
+        return WrapMapper.okStringData("hello world");
     }
 
 }

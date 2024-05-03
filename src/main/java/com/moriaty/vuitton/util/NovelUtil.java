@@ -212,10 +212,10 @@ public class NovelUtil {
                 .get();
     }
 
-    public static Document findDocWithCharset(String url, String charset) throws IOException, URISyntaxException {
+    public static Document findDocWithCharset(String url, String... charset) throws IOException, URISyntaxException {
         URLConnection urlConnection = new URI(url).toURL().openConnection();
         urlConnection.setConnectTimeout(Constant.Network.CONNECT_TIMEOUT);
         return Jsoup.parse(urlConnection.getInputStream(),
-                StringUtils.hasText(charset) ? charset : StandardCharsets.UTF_8.name(), url);
+                charset.length > 0 ? charset[0] : StandardCharsets.UTF_8.name(), url);
     }
 }
