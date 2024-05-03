@@ -9,10 +9,10 @@ import com.moriaty.vuitton.dao.mysql.model.NovelChapter;
 import com.moriaty.vuitton.library.actuator.step.BaseStep;
 import com.moriaty.vuitton.library.actuator.step.StepMeta;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
+import com.moriaty.vuitton.util.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadFactory;
@@ -133,12 +133,7 @@ public class DownloadStep extends BaseStep {
                 int index = i;
                 int sleepSecond = i % 10;
                 factory.newThread(() -> {
-                    try {
-                        Thread.sleep(Duration.ofSeconds(sleepSecond));
-                    } catch (InterruptedException e) {
-                        log.error("sleep is interrupted", e);
-                        Thread.currentThread().interrupt();
-                    }
+                    TimeUtil.sleepSecond(sleepSecond);
                     NovelNetworkChapter chapter = chapterList.get(index);
                     NovelNetworkContent content = novelDownloader.findContent(chapter.getTitle(), chapter.getContentUrl());
 

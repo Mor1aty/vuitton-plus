@@ -4,7 +4,7 @@ import com.moriaty.vuitton.bean.novel.local.NovelChapterWithContent;
 import com.moriaty.vuitton.bean.novel.network.*;
 import com.moriaty.vuitton.dao.mysql.model.Novel;
 import com.moriaty.vuitton.util.NovelUtil;
-import com.moriaty.vuitton.util.RandomUtil;
+import com.moriaty.vuitton.util.TimeUtil;
 import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Document;
@@ -15,7 +15,6 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadFactory;
@@ -92,19 +91,18 @@ public abstract class BaseNovelDownloader {
         return chapterList;
     }
 
+    protected NovelNetworkContent exploreContent(String title, String contentUrl) throws IOException {
+        Document doc = NovelUtil.findDoc(contentUrl);
+        return exploreContent(title, doc, "content");
+    }
+
     protected NovelNetworkContent exploreContent(String title, String contentUrl, String contentDomId) throws IOException {
         Document doc = NovelUtil.findDoc(contentUrl);
         return exploreContent(title, doc, contentDomId);
     }
 
-    protected NovelNetworkContent exploreContent(String title, Element doc, String contentDomId)
-            throws IOException {
-        try {
-            Thread.sleep(Duration.ofSeconds(RandomUtil.randomInt(0, 2)));
-        } catch (InterruptedException e) {
-            log.error("休眠被打断", e);
-            Thread.currentThread().interrupt();
-        }
+    protected NovelNetworkContent exploreContent(String title, Element doc, String contentDomId) {
+        TimeUtil.sleepRandomSecond(0, 2);
 
         Element content = doc.getElementById(contentDomId);
         if (content == null) {
@@ -190,12 +188,7 @@ public abstract class BaseNovelDownloader {
                 int index = i;
                 int sleepSecond = i % 10;
                 factory.newThread(() -> {
-                    try {
-                        Thread.sleep(Duration.ofSeconds(sleepSecond));
-                    } catch (InterruptedException e) {
-                        log.error("sleep is interrupted", e);
-                        Thread.currentThread().interrupt();
-                    }
+                    TimeUtil.sleepSecond(sleepSecond);
                     NovelNetworkChapter chapter = chapterList.get(index);
                     NovelNetworkContent content = findContent(chapter.getTitle(), chapter.getContentUrl());
                     contentMap.put(chapter.getIndex(), content);

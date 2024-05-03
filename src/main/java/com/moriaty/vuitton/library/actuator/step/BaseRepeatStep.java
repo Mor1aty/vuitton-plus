@@ -1,8 +1,8 @@
 package com.moriaty.vuitton.library.actuator.step;
 
+import com.moriaty.vuitton.util.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.Duration;
 
 /**
  * <p>
@@ -63,11 +63,7 @@ public abstract class BaseRepeatStep extends BaseStep {
             repeatNum++;
             log.info("步骤 {} 第 {} 次执行", super.getMeta().getName(), repeatNum);
             repeatRunContent();
-            try {
-                Thread.sleep(Duration.ofSeconds(repeatSleepSecond));
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            TimeUtil.sleepSecond(repeatSleepSecond);
         }
         return true;
     }

@@ -108,7 +108,7 @@ public class BiQuGeNovelDownloader extends BaseNovelDownloader {
     @Override
     public NovelNetworkContent findContent(String title, String contentUrl) {
         try {
-            return exploreContent(title, meta.getContentBaseUrl() + contentUrl, "content1");
+            return exploreContent(title, meta.getContentBaseUrl() + contentUrl);
         } catch (IOException e) {
             return new NovelNetworkContent()
                     .setErrorMsg("获取小说内容发生异常, " + e.getLocalizedMessage());

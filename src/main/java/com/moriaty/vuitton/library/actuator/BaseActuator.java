@@ -4,12 +4,12 @@ import com.alibaba.fastjson2.JSONObject;
 import com.moriaty.vuitton.library.actuator.plugin.MemoryStepDataPlugin;
 import com.moriaty.vuitton.library.actuator.plugin.StepDataPlugin;
 import com.moriaty.vuitton.library.actuator.step.BaseStep;
+import com.moriaty.vuitton.util.TimeUtil;
 import com.moriaty.vuitton.util.UuidUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -182,11 +182,7 @@ public abstract class BaseActuator {
             log.info("{} 执行被打断, 退出执行", mark);
             return true;
         }
-        try {
-            Thread.sleep(Duration.ofSeconds(meta.getStepSleepSecond()));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        TimeUtil.sleepSecond(meta.getStepSleepSecond());
         return false;
     }
 

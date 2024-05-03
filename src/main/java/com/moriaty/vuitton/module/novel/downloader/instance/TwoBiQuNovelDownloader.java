@@ -7,6 +7,7 @@ import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderMeta;
 import com.moriaty.vuitton.module.novel.downloader.dom.*;
 import com.moriaty.vuitton.util.NovelUtil;
+import com.moriaty.vuitton.util.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -122,13 +123,52 @@ public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
     @Override
     public NovelNetworkContent findContent(String title, String contentUrl) {
         try {
-            return exploreContent(title, meta.getContentBaseUrl() + contentUrl,
-                    "content");
-        } catch (IOException e) {
+            TimeUtil.sleepRandomSecond(0, 2);
+
+            Document doc = NovelUtil.findDocWithCharset(meta.getContentBaseUrl() + contentUrl);
+            Element domContent = doc.getElementById("content");
+            if (domContent == null) {
+                return new NovelNetworkContent()
+                        .setErrorMsg("正文不存在");
+            }
+            if (skipContent(domContent.text())) {
+                return new NovelNetworkContent()
+                        .setErrorMsg("本章未更新");
+            }
+            StringBuilder contentSb = new StringBuilder(domContent.text());
+            StringBuilder contentHtmlSb = new StringBuilder(domContent.html());
+
+            Element domNextUrl = doc.getElementById("next_url");
+            int nextIndex = 2;
+            String nextPageStr = "下一页";
+            while (domNextUrl != null && domNextUrl.text().contains(nextPageStr)) {
+                doc = NovelUtil.findDocWithCharset(meta.getContentBaseUrl() + contentUrl.replace(".html",
+                        "_" + nextIndex + ".html"));
+                domContent = doc.getElementById("content");
+                if (domContent == null) {
+                    return new NovelNetworkContent()
+                            .setErrorMsg("正文不存在");
+                }
+                if (skipContent(domContent.text())) {
+                    return new NovelNetworkContent()
+                            .setErrorMsg("本章未更新");
+                }
+                contentSb.append(domContent.text());
+                contentHtmlSb.append(domContent.html());
+                domNextUrl = doc.getElementById("next_url");
+                nextIndex++;
+            }
+
+            return new NovelNetworkContent()
+                    .setTitle(title)
+                    .setContent(removeAbnormalContent(contentSb.toString()))
+                    .setContentHtml(removeAbnormalContent(contentHtmlSb.toString()));
+        } catch (URISyntaxException | IOException e) {
             return new NovelNetworkContent()
                     .setErrorMsg("获取小说内容发生异常, " + e.getLocalizedMessage());
         }
     }
+
 
     @Override
     public String removeAbnormalContent(String content) {
