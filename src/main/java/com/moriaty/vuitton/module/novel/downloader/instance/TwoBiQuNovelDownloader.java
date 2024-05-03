@@ -35,8 +35,8 @@ public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
     private final NovelDownloaderMeta meta = new NovelDownloaderMeta()
             .setWebName("2笔趣")
             .setMark("2BiQu")
-            .setWebsite("https://www.22biqu.com")
-            .setContentBaseUrl("https://www.22biqu.com");
+            .setWebsite("https://www.22biqu.com/")
+            .setContentBaseUrl("https://www.22biqu.com/");
 
     @Override
     public NovelDownloaderMeta getMeta() {
@@ -83,8 +83,8 @@ public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
             List<NovelNetworkChapter> chapterList = new ArrayList<>();
             int index = 0;
             for (int i = 0; i < domIndexOption.size(); i++) {
-                Elements domUls = findChapterDomUls(i, doc, meta.getWebsite() + catalogueUrl
-                                                            + "/" + (i + 1) + "/");
+                Elements domUls = findChapterDomUls(i, doc,
+                        meta.getWebsite() + catalogueUrl + "/" + (i + 1));
                 if (domUls.size() < 2) {
                     return Collections.emptyList();
                 }
@@ -113,16 +113,17 @@ public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
         }
     }
 
-    private Elements findChapterDomUls(int index, Document doc, String chapterUrl)
+    private Elements findChapterDomUls(int index, Document doc, String url)
             throws IOException, URISyntaxException {
         return index == 0 ? doc.getElementsByClass("section-list fix")
-                : NovelUtil.findDocWithCharset(chapterUrl).getElementsByClass("section-list fix");
+                : NovelUtil.findDocWithCharset(url).getElementsByClass("section-list fix");
     }
 
     @Override
     public NovelNetworkContent findContent(String title, String contentUrl) {
         try {
-            return exploreContent(title, meta.getContentBaseUrl() + contentUrl, "content");
+            return exploreContent(title, meta.getContentBaseUrl() + contentUrl,
+                    "content");
         } catch (IOException e) {
             return new NovelNetworkContent()
                     .setErrorMsg("获取小说内容发生异常, " + e.getLocalizedMessage());

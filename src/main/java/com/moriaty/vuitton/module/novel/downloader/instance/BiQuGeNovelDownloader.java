@@ -3,11 +3,10 @@ package com.moriaty.vuitton.module.novel.downloader.instance;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkContent;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkChapter;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkInfo;
-import com.moriaty.vuitton.constant.Constant;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderMeta;
+import com.moriaty.vuitton.util.NovelUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -47,10 +46,7 @@ public class BiQuGeNovelDownloader extends BaseNovelDownloader {
             NovelNetworkInfo info = new NovelNetworkInfo()
                     .setDownloaderMark(meta.getMark())
                     .setDownloaderCatalogueUrl(catalogueUrl);
-            Document doc = Jsoup.connect(meta.getWebsite() + catalogueUrl)
-                    .timeout(Constant.Network.CONNECT_TIMEOUT)
-                    .headers(Constant.Network.CHROME_HEADERS)
-                    .get();
+            Document doc = NovelUtil.findDoc(meta.getWebsite() + catalogueUrl);
             Element domInfo = doc.getElementById("info");
             if (domInfo == null) {
                 return null;
@@ -96,10 +92,7 @@ public class BiQuGeNovelDownloader extends BaseNovelDownloader {
     public List<NovelNetworkChapter> findChapterList(String catalogueUrl) {
         try {
             List<NovelNetworkChapter> chapterList = new ArrayList<>();
-            Document doc = Jsoup.connect(meta.getWebsite() + catalogueUrl)
-                    .timeout(Constant.Network.CONNECT_TIMEOUT)
-                    .headers(Constant.Network.CHROME_HEADERS)
-                    .get();
+            Document doc = NovelUtil.findDoc(meta.getWebsite() + catalogueUrl);
             Element domList = doc.getElementById("list");
             if (domList == null) {
                 return chapterList;

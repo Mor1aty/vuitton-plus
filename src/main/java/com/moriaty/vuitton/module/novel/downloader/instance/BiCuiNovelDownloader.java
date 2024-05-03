@@ -3,10 +3,9 @@ package com.moriaty.vuitton.module.novel.downloader.instance;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkChapter;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkContent;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkInfo;
-import com.moriaty.vuitton.bean.novel.network.resolve.DocResolveAction;
-import com.moriaty.vuitton.bean.novel.network.resolve.DocResolveExecAction;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderMeta;
+import com.moriaty.vuitton.module.novel.downloader.dom.*;
 import com.moriaty.vuitton.util.NovelUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Document;
@@ -19,6 +18,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,8 +31,6 @@ import java.util.List;
 @Component
 @Slf4j
 public class BiCuiNovelDownloader extends BaseNovelDownloader {
-
-    private static final int SKIP_CHAPTER_NUM = 9;
 
     private final NovelDownloaderMeta meta = new NovelDownloaderMeta()
             .setWebName("笔翠")
@@ -50,22 +48,16 @@ public class BiCuiNovelDownloader extends BaseNovelDownloader {
     public NovelNetworkInfo findInfo(String catalogueUrl) {
         try {
             Document doc = NovelUtil.findDocWithCharset(meta.getWebsite() + catalogueUrl, meta.getCharset());
-            NovelNetworkInfo info = NovelUtil.findNovelInfoFromDoc(doc,
-                    new DocResolveExecAction(List.of(
-                            new DocResolveAction("info", null),
-                            new DocResolveAction(null, "h1")),
-                            Element::text),
-                    new DocResolveExecAction(List.of(
-                            new DocResolveAction("info", null),
-                            new DocResolveAction(null, "p")),
-                            dom -> dom.text().replace(" ", "")
-                                    .replace("作    者：", "")),
-                    new DocResolveExecAction(List.of(
-                            new DocResolveAction("intro", null),
-                            new DocResolveAction(null, "p")),
-                            Element::text),
-                    new DocResolveExecAction(List.of(), dom -> "")
-            );
+            DomActionParam nameParam = new DomActionParam(doc, List.of(
+                    new IdDomAction("info"), new TagDomAction("h1")),
+                    Function.identity());
+            DomActionParam authorParam = new DomActionParam(doc, List.of(
+                    new IdDomAction("info"), new TagDomAction("p")),
+                    author -> author.replace("作    者：", "").trim());
+            DomActionParam introParam = new DomActionParam(doc,
+                    List.of(new IdDomAction("intro"), new TagDomAction("p")),
+                    Function.identity());
+            NovelNetworkInfo info = DomActor.findInfo(nameParam, authorParam, introParam, null);
             if (info == null) {
                 return null;
             }
@@ -86,14 +78,25 @@ public class BiCuiNovelDownloader extends BaseNovelDownloader {
             if (domList == null) {
                 return chapterList;
             }
-            Elements domDdList = domList.getElementsByTag("dd");
-            if (domDdList.isEmpty()) {
+            Elements domListDls = domList.getElementsByTag("dl");
+            if (domListDls.isEmpty()) {
                 return chapterList;
             }
-            if (domDdList.size() > SKIP_CHAPTER_NUM) {
-                domDdList = new Elements(domDdList.subList(SKIP_CHAPTER_NUM, domDdList.size()));
+            List<Element> domDdList = new ArrayList<>();
+            Element domListDl = domListDls.getFirst();
+            Elements domListDlChildren = domListDl.children();
+            int skipDtNum = 2;
+            int skipDt = 0;
+            for (Element domListDlChild : domListDlChildren) {
+                if ("dt".equals(domListDlChild.tagName())) {
+                    skipDt++;
+                    continue;
+                }
+                if (skipDt >= skipDtNum && "dd".equals(domListDlChild.tagName())) {
+                    domDdList.add(domListDlChild);
+                }
             }
-            return exploreChapterList(domDdList, "");
+            return exploreChapterList(new Elements(domDdList), "");
         } catch (URISyntaxException | IOException e) {
             log.error("获取章节列表异常", e);
             return Collections.emptyList();

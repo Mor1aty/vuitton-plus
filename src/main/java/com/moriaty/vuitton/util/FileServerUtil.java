@@ -6,7 +6,6 @@ import com.moriaty.vuitton.constant.Constant;
 import com.moriaty.vuitton.library.wrap.Wrapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -77,10 +76,7 @@ public class FileServerUtil {
 
     public static List<String> findFileFromFolder(String folderUrl) {
         try {
-            Document doc = Jsoup.connect(folderUrl)
-                    .timeout(Constant.Network.CONNECT_TIMEOUT)
-                    .headers(Constant.Network.CHROME_HEADERS)
-                    .get();
+            Document doc = NovelUtil.findDoc(folderUrl);
             Elements domPre = doc.getElementsByTag("pre");
             if (domPre.isEmpty()) {
                 log.error("获取文件失败");

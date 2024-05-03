@@ -2,9 +2,6 @@ package com.moriaty.vuitton.util;
 
 import com.moriaty.vuitton.bean.novel.local.NovelChapterWithContent;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkContent;
-import com.moriaty.vuitton.bean.novel.network.NovelNetworkInfo;
-import com.moriaty.vuitton.bean.novel.network.resolve.DocResolveAction;
-import com.moriaty.vuitton.bean.novel.network.resolve.DocResolveExecAction;
 import com.moriaty.vuitton.constant.Constant;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderFactory;
@@ -12,8 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -155,57 +150,8 @@ public class NovelUtil {
         }
     }
 
-    public static String findTextFromDoc(Element startDom, DocResolveExecAction execAction) {
-        Element lastDom = startDom;
-        for (DocResolveAction action : execAction.actionList()) {
-            if (StringUtils.hasText(action.id())) {
-                Element newDom = lastDom.getElementById(action.id());
-                if (newDom == null) {
-                    return null;
-                }
-                lastDom = newDom;
-            } else if (StringUtils.hasText(action.tag())) {
-                Elements newDom = lastDom.getElementsByTag(action.tag());
-                if (newDom.isEmpty()) {
-                    return null;
-                }
-                lastDom = newDom.getFirst();
-            }
-        }
-        return execAction.finalGetAction().apply(lastDom);
-    }
-
-    public static NovelNetworkInfo findNovelInfoFromDoc(Element startDom,
-                                                        DocResolveExecAction nameAction,
-                                                        DocResolveExecAction authorAction,
-                                                        DocResolveExecAction introAction,
-                                                        DocResolveExecAction imgAction) {
-        NovelNetworkInfo info = new NovelNetworkInfo();
-        String name = findTextFromDoc(startDom, nameAction);
-        if (name == null) {
-            return null;
-        }
-        info.setName(name);
-        String author = findTextFromDoc(startDom, authorAction);
-        if (author == null) {
-            return null;
-        }
-        info.setAuthor(author);
-        String intro = findTextFromDoc(startDom, introAction);
-        if (intro == null) {
-            return null;
-        }
-        info.setIntro(StringUtils.hasText(intro.trim()) ? intro.trim() : "暂无");
-        String img = findTextFromDoc(startDom, imgAction);
-        if (img == null) {
-            return null;
-        }
-        info.setImgUrl(img);
-        return info;
-    }
-
     public static Document findDoc(String url) throws IOException {
-        return Jsoup.connect(url)
+        return Jsoup.connect(cleanUrl(url))
                 .timeout(Constant.Network.CONNECT_TIMEOUT)
                 .headers(Constant.Network.CHROME_HEADERS)
                 .ignoreHttpErrors(true)
@@ -213,9 +159,18 @@ public class NovelUtil {
     }
 
     public static Document findDocWithCharset(String url, String... charset) throws IOException, URISyntaxException {
-        URLConnection urlConnection = new URI(url).toURL().openConnection();
+        URLConnection urlConnection = new URI(cleanUrl(url)).toURL().openConnection();
         urlConnection.setConnectTimeout(Constant.Network.CONNECT_TIMEOUT);
         return Jsoup.parse(urlConnection.getInputStream(),
                 charset.length > 0 ? charset[0] : StandardCharsets.UTF_8.name(), url);
+    }
+
+    public static String cleanUrl(String url) {
+        String[] split = url.split("//");
+        StringBuilder sb = new StringBuilder();
+        for (String s : split) {
+            sb.append(s).append(s.startsWith("http") ? "//" : "/");
+        }
+        return sb.substring(0, sb.length() - 1);
     }
 }

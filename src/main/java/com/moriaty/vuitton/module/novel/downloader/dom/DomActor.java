@@ -2,6 +2,7 @@ package com.moriaty.vuitton.module.novel.downloader.dom;
 
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkInfo;
 import org.jsoup.nodes.Element;
+import org.springframework.util.StringUtils;
 
 /**
  * <p>
@@ -56,7 +57,7 @@ public class DomActor {
         if (intro == null) {
             return null;
         }
-        info.setIntro(intro);
+        info.setIntro(StringUtils.hasText(intro) ? intro : "暂无");
         if (imgParam != null) {
             Element img = findElement(imgParam);
             if (img == null) {
