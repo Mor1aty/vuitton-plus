@@ -30,6 +30,8 @@ public class DownloadStep extends BaseStep {
 
     private final BaseNovelDownloader novelDownloader;
 
+    private Boolean parallel = false;
+
     public DownloadStep(BaseNovelDownloader novelDownloader) {
         this.novelDownloader = novelDownloader;
     }
@@ -46,6 +48,9 @@ public class DownloadStep extends BaseStep {
         if (totalChapterNum == null) {
             return "正在查询小说目录";
         }
+        if (parallel) {
+            return "并行下载, 共" + totalChapterNum + "章";
+        }
         Integer currentChapterIndex = super.getStepData("currentChapterIndex", new TypeReference<>() {
         });
         return "正在下载: " + currentChapterIndex + "/" + totalChapterNum;
@@ -57,7 +62,7 @@ public class DownloadStep extends BaseStep {
         });
         String novelCatalogueUrl = super.getStepData("novelCatalogueUrl", new TypeReference<>() {
         });
-        Boolean parallel = super.getStepData("parallel", new TypeReference<>() {
+        parallel = super.getStepData("parallel", new TypeReference<>() {
         });
         NovelNetworkInfo info = novelDownloader.findInfo(novelCatalogueUrl);
         if (info == null) {
