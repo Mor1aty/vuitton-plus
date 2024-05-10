@@ -67,7 +67,8 @@ public class NovelNetworkModule implements InitializingBean {
 
     public Optional<NovelNetworkFixDownloadResult> fixDownload(@Nonnull BaseNovelDownloader novelDownloader, Novel novel,
                                                                List<NovelChapterWithContent> existedChapterList, int fixNum) {
-        NovelNetworkFixDownloadResult result = novelDownloader.fixDownload(novel, existedChapterList, fixNum);
+        NovelNetworkFixDownloadResult result = novelDownloader.fixDownload(novel, existedChapterList,
+                fixNum, null);
         if (result == null) {
             log.error("修补下载小说失败");
             return Optional.empty();

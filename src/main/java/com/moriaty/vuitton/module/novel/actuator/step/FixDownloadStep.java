@@ -68,7 +68,8 @@ public class FixDownloadStep extends BaseRepeatStep {
         List<NovelChapterWithContent> chapterList = super.getStepData("chapterList", new TypeReference<>() {
         });
 
-        NovelNetworkFixDownloadResult fixDownloadResult = novelDownloader.fixDownload(novel, chapterList, -1);
+        NovelNetworkFixDownloadResult fixDownloadResult = novelDownloader.fixDownload(novel, chapterList, -1,
+                (missChapterNum) -> super.putStepData(KEY_MISSING_CHAPTER_NUM, missChapterNum));
         if (fixDownloadResult == null) {
             log.error("修补下载失败");
             super.putStepData("fixDownloadFailure", true);

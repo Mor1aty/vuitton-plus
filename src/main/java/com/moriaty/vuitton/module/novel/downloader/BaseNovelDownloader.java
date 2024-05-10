@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Consumer;
 
 /**
  * <p>
@@ -212,7 +213,7 @@ public abstract class BaseNovelDownloader {
     }
 
     public NovelNetworkFixDownloadResult fixDownload(Novel novel, List<NovelChapterWithContent> existedChapterList,
-                                                     int fixNum) {
+                                                     int fixNum, Consumer<Integer> beforeRun) {
         List<NovelNetworkContent> fixContentList = new ArrayList<>();
         List<NovelNetworkContent> failureContentList = new ArrayList<>();
         List<Integer> existedIndexList = existedChapterList.stream().map(chapter -> chapter.getChapter().getIndex())
@@ -223,6 +224,9 @@ public abstract class BaseNovelDownloader {
                 .toList();
         int needFixNum = fixNum == -1 ? missingChapterList.size() : Math.min(missingChapterList.size(), fixNum);
         log.info("缺失小说章节: {}, 需要修复章节数: {}", missingChapterList.size(), needFixNum);
+        if (beforeRun != null) {
+            beforeRun.accept(missingChapterList.size());
+        }
         for (int i = 0; i < missingChapterList.size(); i++) {
             if (fixNum != -1 && i >= fixNum) {
                 break;
