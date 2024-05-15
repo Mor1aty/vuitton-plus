@@ -63,18 +63,20 @@ public abstract class BaseNovelDownloader {
      */
     public abstract NovelNetworkContent findContent(String title, String contentUrl);
 
-    /**
-     * 去除异常内容
-     *
-     * @param content String
-     * @return String
-     */
     public String removeAbnormalContent(String content) {
         return content.replace(" ", "\n").trim();
     }
 
     protected boolean skipContent(String content) {
         return !StringUtils.hasText(content);
+    }
+
+    protected Elements findSelectOption(Document doc) {
+        Element domIndex = doc.getElementById("indexselect");
+        if (domIndex == null) {
+            return null;
+        }
+        return domIndex.getElementsByTag("option");
     }
 
     protected List<NovelNetworkChapter> exploreChapterList(Elements domList, @Nonnull String contentPrefix) {
@@ -94,10 +96,10 @@ public abstract class BaseNovelDownloader {
         return chapterList;
     }
 
-    protected NovelNetworkContent exploreContent(String title, String contentUrl) throws IOException {
-        Document doc = NovelUtil.findDoc(contentUrl);
-        return exploreContent(title, doc, "content");
-    }
+//    protected NovelNetworkContent exploreContent(String title, String contentUrl) throws IOException {
+//        Document doc = NovelUtil.findDoc(contentUrl);
+//        return exploreContent(title, doc, "content");
+//    }
 
     protected NovelNetworkContent exploreContent(String title, String contentUrl, String contentDomId) throws IOException {
         Document doc = NovelUtil.findDoc(contentUrl);

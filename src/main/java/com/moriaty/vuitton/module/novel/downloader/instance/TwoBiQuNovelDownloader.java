@@ -76,11 +76,7 @@ public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
     public List<NovelNetworkChapter> findChapterList(String catalogueUrl) {
         try {
             Document doc = NovelUtil.findDocWithCharset(meta.getWebsite() + catalogueUrl);
-            Element domIndex = doc.getElementById("indexselect");
-            if (domIndex == null) {
-                return Collections.emptyList();
-            }
-            Elements domIndexOption = domIndex.getElementsByTag("option");
+            Elements domIndexOption = findSelectOption(doc);
             List<NovelNetworkChapter> chapterList = new ArrayList<>();
             int index = 0;
             for (int i = 0; i < domIndexOption.size(); i++) {

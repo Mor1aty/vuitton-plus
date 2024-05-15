@@ -82,11 +82,7 @@ public class TqNovelDownloader extends BaseNovelDownloader {
                 catalogueUrl = catalogueUrl.substring(0, catalogueUrl.length() - 1);
             }
             Document doc = NovelUtil.findDocWithCharset(meta.getWebsite() + catalogueUrl);
-            Element domIndex = doc.getElementById("indexselect");
-            if (domIndex == null) {
-                return List.of();
-            }
-            Elements domIndexOption = domIndex.getElementsByTag("option");
+            Elements domIndexOption = findSelectOption(doc);
             List<NovelNetworkChapter> chapterList = new ArrayList<>();
             int index = 0;
             for (int i = 0; i < domIndexOption.size(); i++) {

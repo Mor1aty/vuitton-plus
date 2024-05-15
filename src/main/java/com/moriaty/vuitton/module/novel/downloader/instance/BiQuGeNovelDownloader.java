@@ -33,7 +33,8 @@ public class BiQuGeNovelDownloader extends BaseNovelDownloader {
             .setWebName("笔奇部")
             .setMark("BiQuGe")
             .setWebsite("https://www.biqubu1.com")
-            .setContentBaseUrl("https://www.biqubu1.com/");
+            .setContentBaseUrl("https://www.biqubu1.com/")
+            .setDisable(true);
 
     @Override
     public NovelDownloaderMeta getMeta() {
@@ -108,7 +109,7 @@ public class BiQuGeNovelDownloader extends BaseNovelDownloader {
     @Override
     public NovelNetworkContent findContent(String title, String contentUrl) {
         try {
-            return exploreContent(title, meta.getContentBaseUrl() + contentUrl);
+            return exploreContent(title, meta.getContentBaseUrl() + contentUrl, "content");
         } catch (IOException e) {
             return new NovelNetworkContent()
                     .setErrorMsg("获取小说内容发生异常, " + e.getLocalizedMessage());
