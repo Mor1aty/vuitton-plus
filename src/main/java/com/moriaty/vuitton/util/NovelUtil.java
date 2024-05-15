@@ -47,7 +47,6 @@ public class NovelUtil {
     public static boolean writeContentToFile(FileWriter fileWriter, int index,
                                              NovelNetworkContent content) throws IOException {
         String chapterName = "第" + index + "折 ";
-        fileWriter.write(chapterName);
         boolean isNormal = false;
         if (content == null) {
             chapterName += "本章不存在";

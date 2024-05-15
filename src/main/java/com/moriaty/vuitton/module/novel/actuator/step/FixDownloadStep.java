@@ -47,7 +47,7 @@ public class FixDownloadStep extends BaseRepeatStep {
         if (missingChapterNum == null) {
             return "正在检查缺失章节";
         }
-        return "缺失章节数: " + missingChapterNum;
+        return "第" + super.repeatNum + "次修补, 缺失章节数: " + missingChapterNum;
     }
 
     @Override

@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class BaseRepeatStep extends BaseStep {
 
-    private int repeatNum = 0;
+    protected int repeatNum = 0;
 
     private int repeatSleepSecond;
 
