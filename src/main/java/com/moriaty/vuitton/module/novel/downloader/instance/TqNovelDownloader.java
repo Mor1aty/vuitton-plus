@@ -5,7 +5,10 @@ import com.moriaty.vuitton.bean.novel.network.NovelNetworkContent;
 import com.moriaty.vuitton.bean.novel.network.NovelNetworkInfo;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
 import com.moriaty.vuitton.module.novel.downloader.NovelDownloaderMeta;
-import com.moriaty.vuitton.module.novel.downloader.dom.*;
+import com.moriaty.vuitton.module.novel.downloader.dom.ClassDomAction;
+import com.moriaty.vuitton.module.novel.downloader.dom.DomActionParam;
+import com.moriaty.vuitton.module.novel.downloader.dom.DomActor;
+import com.moriaty.vuitton.module.novel.downloader.dom.TagDomAction;
 import com.moriaty.vuitton.util.NovelUtil;
 import com.moriaty.vuitton.util.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -17,27 +20,26 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
 /**
  * <p>
- * 2 笔趣小说 Downloader
+ * 3Q 中文小说 Downloader
  * </p>
  *
  * @author Moriaty
- * @since 2024/1/28 下午6:02
+ * @since 2024/5/15 下午3:54
  */
 @Component
 @Slf4j
-public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
+public class TqNovelDownloader extends BaseNovelDownloader {
 
     private final NovelDownloaderMeta meta = new NovelDownloaderMeta()
-            .setWebName("2笔趣")
-            .setMark("2BiQu")
-            .setWebsite("https://www.22biqu.com/")
-            .setContentBaseUrl("https://www.22biqu.com/");
+            .setWebName("3Q 中文")
+            .setMark("3Q")
+            .setWebsite("https://sk.3qxsw.org/xiaoshuo/")
+            .setContentBaseUrl("https://sk.3qxsw.org/");
 
     @Override
     public NovelDownloaderMeta getMeta() {
@@ -49,16 +51,16 @@ public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
         try {
             Document doc = NovelUtil.findDocWithCharset(meta.getWebsite() + catalogueUrl);
             DomActionParam nameParam = new DomActionParam(doc, List.of(
-                    new ClassDomAction("top"), new TagDomAction("h1")),
+                    new ClassDomAction("tab"), new ClassDomAction("p1")),
                     Function.identity());
             DomActionParam authorParam = new DomActionParam(doc, List.of(
-                    new ClassDomAction("fix"), new TagDomAction("p")),
-                    author -> author.replace("作 者：", "").trim());
+                    new ClassDomAction("tab"), new ClassDomAction("p1", 1)),
+                    author -> author.replace("作者：", "").trim());
             DomActionParam introParam = new DomActionParam(doc,
-                    List.of(new ClassDomAction("desc xs-hidden")),
-                    Function.identity());
+                    List.of(new ClassDomAction("jj"), new ClassDomAction("p2")),
+                    intro -> "暂无");
             DomActionParam imgParam = new DomActionParam(doc,
-                    List.of(new TagDomAction("img")),
+                    List.of(new ClassDomAction("tu"), new TagDomAction("img")),
                     Function.identity());
             NovelNetworkInfo info = DomActor.findInfo(nameParam, authorParam, introParam, imgParam);
             if (info == null) {
@@ -75,34 +77,33 @@ public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
     @Override
     public List<NovelNetworkChapter> findChapterList(String catalogueUrl) {
         try {
+            String urlLast = "/";
+            if (catalogueUrl.endsWith(urlLast)) {
+                catalogueUrl = catalogueUrl.substring(0, catalogueUrl.length() - 1);
+            }
             Document doc = NovelUtil.findDocWithCharset(meta.getWebsite() + catalogueUrl);
             Element domIndex = doc.getElementById("indexselect");
             if (domIndex == null) {
-                return Collections.emptyList();
+                return List.of();
             }
             Elements domIndexOption = domIndex.getElementsByTag("option");
             List<NovelNetworkChapter> chapterList = new ArrayList<>();
             int index = 0;
             for (int i = 0; i < domIndexOption.size(); i++) {
-                Elements domUls = findChapterDomUls(i, doc,
-                        meta.getWebsite() + catalogueUrl + "/" + (i + 1));
-                if (domUls.size() < 2) {
-                    return Collections.emptyList();
+                Elements domLis = findChapterDomLis(i, doc, meta.getWebsite() + catalogueUrl + "_" + (i + 1));
+                if (domLis == null || domLis.isEmpty()) {
+                    return List.of();
                 }
-                Element domUl1 = domUls.get(1);
-                Elements domUl1Lis = domUl1.getElementsByTag("li");
-                if (domUl1Lis.isEmpty()) {
-                    return Collections.emptyList();
-                }
-                for (Element domUl1Li : domUl1Lis) {
-                    Elements domUl1LiA = domUl1Li.getElementsByTag("a");
-                    if (domUl1LiA.isEmpty()) {
-                        log.warn("章节 {} 获取失败", domUl1Li);
+                for (Element domLi : domLis) {
+                    Elements domLiAs = domLi.getElementsByTag("a");
+                    if (domLiAs.isEmpty()) {
+                        log.warn("章节 {} 获取失败", domLi);
                     } else {
+                        Element domLiA = domLiAs.getFirst();
                         chapterList.add(new NovelNetworkChapter()
                                 .setIndex(index)
-                                .setTitle(domUl1LiA.text())
-                                .setContentUrl(domUl1LiA.attr("href")));
+                                .setTitle(domLiA.text())
+                                .setContentUrl(domLiA.attr("href")));
                     }
                     index++;
                 }
@@ -110,14 +111,22 @@ public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
             return chapterList;
         } catch (URISyntaxException | IOException e) {
             log.error("获取章节列表异常", e);
-            return Collections.emptyList();
+            return List.of();
         }
     }
 
-    private Elements findChapterDomUls(int index, Document doc, String url)
+    private Elements findChapterDomLis(int index, Document doc, String url)
             throws IOException, URISyntaxException {
-        return index == 0 ? doc.getElementsByClass("section-list fix")
-                : NovelUtil.findDocWithCharset(url).getElementsByClass("section-list fix");
+        if (index != 0) {
+            doc = NovelUtil.findDocWithCharset(url);
+        }
+        Elements domUls = doc.getElementsByTag("ul");
+        int needUrlNum = 2;
+        if (domUls.isEmpty() || domUls.size() < needUrlNum) {
+            return null;
+        }
+        Element domUl = domUls.get(1);
+        return domUl.getElementsByTag("li");
     }
 
     @Override
@@ -126,25 +135,23 @@ public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
             TimeUtil.sleepRandomSecond(0, 2);
 
             Document doc = NovelUtil.findDocWithCharset(meta.getContentBaseUrl() + contentUrl);
-            Element domContent = doc.getElementById("content");
+            Element domContent = doc.getElementById("novelcontent");
             if (domContent == null) {
-                return new NovelNetworkContent()
-                        .setErrorMsg("正文不存在");
+                return new NovelNetworkContent().setErrorMsg("正文不存在");
             }
             if (skipContent(domContent.text())) {
-                return new NovelNetworkContent()
-                        .setErrorMsg("本章未更新");
+                return new NovelNetworkContent().setErrorMsg("本章未更新");
             }
-            StringBuilder contentSb = new StringBuilder(domContent.text());
             StringBuilder contentHtmlSb = new StringBuilder(domContent.html());
+            StringBuilder contentSb = new StringBuilder(domContent.text());
+            Elements domNextUrl = doc.getElementsByClass("p4");
 
-            Element domNextUrl = doc.getElementById("next_url");
             int nextIndex = 2;
             String nextPageStr = "下一页";
-            while (domNextUrl != null && domNextUrl.text().contains(nextPageStr)) {
+            while (!domNextUrl.isEmpty() && domNextUrl.text().contains(nextPageStr)) {
                 doc = NovelUtil.findDocWithCharset(meta.getContentBaseUrl() + contentUrl.replace(".html",
                         "_" + nextIndex + ".html"));
-                domContent = doc.getElementById("content");
+                domContent = doc.getElementById("novelcontent");
                 if (domContent == null) {
                     return new NovelNetworkContent()
                             .setErrorMsg("正文不存在");
@@ -155,10 +162,9 @@ public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
                 }
                 contentSb.append(domContent.text());
                 contentHtmlSb.append(domContent.html());
-                domNextUrl = doc.getElementById("next_url");
+                domNextUrl = doc.getElementsByClass("p4");
                 nextIndex++;
             }
-
             return new NovelNetworkContent()
                     .setTitle(title)
                     .setContent(removeAbnormalContent(contentSb.toString()))
@@ -169,4 +175,12 @@ public class TwoBiQuNovelDownloader extends BaseNovelDownloader {
         }
     }
 
+    @Override
+    public String removeAbnormalContent(String content) {
+        return super.removeAbnormalContent(content)
+                .replace("本章未完", "")
+                .replace("点击下一页继续阅读", "")
+                .replace("本章已完", "")
+                .replace("m.3qdu.com", "");
+    }
 }

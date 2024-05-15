@@ -117,7 +117,7 @@ public class BiQuGeNovelDownloader extends BaseNovelDownloader {
 
     @Override
     public String removeAbnormalContent(String content) {
-        return content.replace(" ", "\n").trim()
+        return super.removeAbnormalContent(content)
                 .substring(0, content.lastIndexOf("网页版章节内容慢，请下载爱阅小说app阅读最新内容")).trim();
     }
 

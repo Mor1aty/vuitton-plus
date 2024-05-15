@@ -113,9 +113,4 @@ public class BiCuiNovelDownloader extends BaseNovelDownloader {
                     .setErrorMsg("获取小说内容发生异常, " + e.getLocalizedMessage());
         }
     }
-
-    @Override
-    public String removeAbnormalContent(String content) {
-        return content.replace(" ", "\n").trim();
-    }
 }

@@ -69,7 +69,9 @@ public abstract class BaseNovelDownloader {
      * @param content String
      * @return String
      */
-    public abstract String removeAbnormalContent(String content);
+    public String removeAbnormalContent(String content) {
+        return content.replace(" ", "\n").trim();
+    }
 
     protected boolean skipContent(String content) {
         return !StringUtils.hasText(content);
