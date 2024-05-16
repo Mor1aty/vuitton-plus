@@ -8,11 +8,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.moriaty.vuitton.constant.Constant;
+import okhttp3.OkHttpClient;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
@@ -61,4 +63,13 @@ public class ServerConfig {
         return objectMapper;
     }
 
+    @Bean
+    public OkHttpClient httpClient() {
+        return new OkHttpClient().newBuilder()
+                .connectTimeout(Duration.ofMinutes(5))
+                .writeTimeout(Duration.ofMinutes(5))
+                .readTimeout(Duration.ofMinutes(5))
+                .callTimeout(Duration.ofMinutes(5))
+                .build();
+    }
 }

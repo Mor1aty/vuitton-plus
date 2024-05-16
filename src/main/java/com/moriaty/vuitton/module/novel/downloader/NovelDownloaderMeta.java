@@ -23,6 +23,8 @@ public class NovelDownloaderMeta {
 
     private String catalogueBaseUrl;
 
+    private String apiBaseUrl;
+
     private String mark;
 
     private String charset;
