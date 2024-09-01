@@ -74,35 +74,6 @@ public class FixDownloadStep extends BaseRepeatStep {
         return missingChapterNum != null && missingChapterNum == 0;
     }
 
-//    @Override
-//    protected void repeatRunContent() {
-//
-//        List<NovelChapterWithContent> chapterList = super.getStepData("chapterList", new TypeReference<>() {
-//        });
-//
-//        NovelNetworkFixDownloadResult fixDownloadResult = novelDownloader.fixDownload(novel, chapterList, -1,
-//                (missChapterNum) -> super.putStepData(KEY_MISSING_CHAPTER_NUM, missChapterNum));
-//        if (fixDownloadResult == null) {
-//            log.error("修补下载失败");
-//            super.putStepData("fixDownloadFailure", true);
-//            return;
-//        }
-//        super.putStepData(KEY_MISSING_CHAPTER_NUM, fixDownloadResult.getMissingChapterList().size());
-//        if (!fixDownloadResult.getFixContentList().isEmpty()) {
-//            chapterList.addAll(fixDownloadResult.getFixContentList().stream()
-//                    .map(content -> new NovelChapterWithContent()
-//                            .setChapter(new NovelChapter()
-//                                    .setIndex(content.getIndex())
-//                                    .setTitle(content.getTitle()))
-//                            .setContent(new MongoNovelChapterContent()
-//                                    .setContent(content.getContent())
-//                                    .setContentHtml(content.getContentHtml()))
-//                    ).toList());
-//            chapterList.sort(Comparator.comparingInt(chapter -> chapter.getChapter().getIndex()));
-//            super.putStepData("chapterList", chapterList);
-//        }
-//    }
-
     @Override
     protected void repeatRunContent() {
 
@@ -179,6 +150,7 @@ public class FixDownloadStep extends BaseRepeatStep {
                     if (content != null && !StringUtils.hasText(content.getErrorMsg())) {
                         log.info("{} 并行修复下载 {} {}", novelDownloader.getMeta().getMark(), chapter.getIndex(),
                                 chapter.getTitle());
+                        content.setIndex(chapter.getIndex());
                         fixContentMap.put(chapter.getIndex(), content);
                     }
                 });

@@ -35,8 +35,8 @@ public class BiCuiNovelDownloader extends BaseNovelDownloader {
     private final NovelDownloaderMeta meta = new NovelDownloaderMeta()
             .setWebName("笔翠")
             .setMark("BiCui")
-            .setWebsite("https://www.bicuix.com/")
-            .setContentBaseUrl("https://www.bicuix.com/")
+            .setWebsite("https://www.bicui6.com/")
+            .setContentBaseUrl("https://www.bicui6.com/")
             .setCharset("GBK");
 
     @Override
