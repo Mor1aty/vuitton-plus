@@ -42,7 +42,7 @@ public class ActuatorMeta {
     public ActuatorMeta(String id, String name) {
         this.id = id;
         this.name = name;
-        this.timeoutSecond = 30 * 60;
+        this.timeoutSecond = 24 * 60 * 60;
         this.stepSleepSecond = 5;
         this.stepFailContinue = false;
     }

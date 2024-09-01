@@ -16,9 +16,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadFactory;
-import java.util.function.Consumer;
 
 /**
  * <p>
@@ -95,11 +92,6 @@ public abstract class BaseNovelDownloader {
         }
         return chapterList;
     }
-
-//    protected NovelNetworkContent exploreContent(String title, String contentUrl) throws IOException {
-//        Document doc = NovelUtil.findDoc(contentUrl);
-//        return exploreContent(title, doc, "content");
-//    }
 
     protected NovelNetworkContent exploreContent(String title, String contentUrl, String contentDomId) throws IOException {
         Document doc = NovelUtil.findDoc(contentUrl);
@@ -182,42 +174,31 @@ public abstract class BaseNovelDownloader {
             log.error("并行下载小说 {} 失败", name);
             return null;
         }
-        try {
-            List<NovelNetworkChapter> chapterList = findChapterList(catalogueUrl);
-            Map<Integer, NovelNetworkContent> contentMap = HashMap.newHashMap(chapterList.size());
-            List<NovelNetworkContent> errorContentList = new ArrayList<>();
-            ThreadFactory factory = Thread.ofVirtual().name("novel-downloader", 0).factory();
-            CountDownLatch countDownLatch = new CountDownLatch(chapterList.size());
-            log.info("共 {} 章, 开启虚拟线程: {}", countDownLatch.getCount(), countDownLatch.getCount());
-            for (int i = 0; i < chapterList.size(); i++) {
-                int index = i;
-                int sleepSecond = i % 10;
-                factory.newThread(() -> {
-                    TimeUtil.sleepSecond(sleepSecond);
+        List<NovelNetworkChapter> chapterList = findChapterList(catalogueUrl);
+        Map<Integer, NovelNetworkContent> contentMap = HashMap.newHashMap(chapterList.size());
+        List<NovelNetworkContent> errorContentList = new ArrayList<>();
+        boolean isSuccess = NovelUtil.parallelOperation("novel-downloader", chapterList.size(),
+                (index) -> {
                     NovelNetworkChapter chapter = chapterList.get(index);
                     NovelNetworkContent content = findContent(chapter.getTitle(), chapter.getContentUrl());
                     contentMap.put(chapter.getIndex(), content);
                     if (StringUtils.hasText(content.getErrorMsg())) {
                         errorContentList.add(content);
                     }
-                    countDownLatch.countDown();
-                }).start();
-            }
-            countDownLatch.await();
+                });
+        if (!isSuccess) {
+            return null;
+        } else {
             log.info("章节: {}", contentMap.size());
             log.info("错误章节: {}", errorContentList.size());
             List<NovelNetworkContent> contentList = execDownload(name, result.getFile(), chapterList, contentMap);
             result.setContentList(contentList);
             return result;
-        } catch (InterruptedException e) {
-            log.error("下载小说被打断", e);
-            Thread.currentThread().interrupt();
-            return null;
         }
     }
 
     public NovelNetworkFixDownloadResult fixDownload(Novel novel, List<NovelChapterWithContent> existedChapterList,
-                                                     int fixNum, Consumer<Integer> beforeRun) {
+                                                     int fixNum) {
         List<NovelNetworkContent> fixContentList = new ArrayList<>();
         List<NovelNetworkContent> failureContentList = new ArrayList<>();
         List<Integer> existedIndexList = existedChapterList.stream().map(chapter -> chapter.getChapter().getIndex())
@@ -228,9 +209,6 @@ public abstract class BaseNovelDownloader {
                 .toList();
         int needFixNum = fixNum == -1 ? missingChapterList.size() : Math.min(missingChapterList.size(), fixNum);
         log.info("缺失小说章节: {}, 需要修复章节数: {}", missingChapterList.size(), needFixNum);
-        if (beforeRun != null) {
-            beforeRun.accept(missingChapterList.size());
-        }
         for (int i = 0; i < missingChapterList.size(); i++) {
             if (fixNum != -1 && i >= fixNum) {
                 break;

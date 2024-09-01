@@ -9,13 +9,11 @@ import com.moriaty.vuitton.dao.mysql.model.NovelChapter;
 import com.moriaty.vuitton.library.actuator.step.BaseStep;
 import com.moriaty.vuitton.library.actuator.step.StepMeta;
 import com.moriaty.vuitton.module.novel.downloader.BaseNovelDownloader;
-import com.moriaty.vuitton.util.TimeUtil;
+import com.moriaty.vuitton.util.NovelUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * <p>
@@ -130,30 +128,17 @@ public class DownloadStep extends BaseStep {
                                                            List<NovelNetworkChapter> chapterList) {
         List<NovelChapterWithContent> downloadChapterList = new ArrayList<>();
         Map<Integer, NovelNetworkContent> contentMap = new TreeMap<>();
-        try {
-            ThreadFactory factory = Thread.ofVirtual().name("actuator-novel-downloader", 0).factory();
-            CountDownLatch countDownLatch = new CountDownLatch(chapterList.size());
-            log.info("共 {} 章, 开启虚拟线程: {}", chapterList.size(), countDownLatch.getCount());
-            for (int i = 0; i < chapterList.size(); i++) {
-                int index = i;
-                int sleepSecond = i % 10;
-                factory.newThread(() -> {
-                    TimeUtil.sleepSecond(sleepSecond);
+        NovelUtil.parallelOperation("actuator-novel-downloader-step-download", chapterList.size(),
+                (index) -> {
                     NovelNetworkChapter chapter = chapterList.get(index);
                     NovelNetworkContent content = novelDownloader.findContent(chapter.getTitle(), chapter.getContentUrl());
 
                     if (content != null && !StringUtils.hasText(content.getErrorMsg())) {
-                        log.info("{} 并行下载 {} {}", novelDownloader.getMeta().getMark(), chapter.getIndex(), chapter.getTitle());
+                        log.info("{} 并行下载 {} {}", novelDownloader.getMeta().getMark(), chapter.getIndex(),
+                                chapter.getTitle());
                         contentMap.put(chapter.getIndex(), content);
                     }
-                    countDownLatch.countDown();
-                }).start();
-            }
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            log.error("下载小说被打断", e);
-            Thread.currentThread().interrupt();
-        }
+                });
         log.info("共下载章节: {}", contentMap.size());
         if (!contentMap.isEmpty()) {
             contentMap.forEach((chapterIndex, content) -> downloadChapterList.add(new NovelChapterWithContent()

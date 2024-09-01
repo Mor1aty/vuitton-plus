@@ -28,7 +28,7 @@ import java.util.Objects;
  */
 @Aspect
 @Component
-@Slf4j
+@Slf4j(topic = "request")
 public class ApiLogAspect {
 
     @Around("execution(* com.moriaty.vuitton.ctrl.*.*(..))")

@@ -19,6 +19,9 @@ import java.net.URISyntaxException;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadFactory;
+import java.util.function.Consumer;
 
 /**
  * <p>
@@ -171,5 +174,29 @@ public class NovelUtil {
             sb.append(s).append(s.startsWith("http") ? "//" : "/");
         }
         return sb.substring(0, sb.length() - 1);
+    }
+
+    public static boolean parallelOperation(String threadName, int countDownCount, Consumer<Integer> operate) {
+        try {
+            ThreadFactory factory = Thread.ofVirtual()
+                    .name(threadName, 0).factory();
+            CountDownLatch countDownLatch = new CountDownLatch(countDownCount);
+            log.info("开启虚拟线程: {}", countDownLatch.getCount());
+            for (int i = 0; i < countDownCount; i++) {
+                int index = i;
+                int sleepSecond = i % 10;
+                factory.newThread(() -> {
+                    TimeUtil.sleepSecond(sleepSecond);
+                    operate.accept(index);
+                    countDownLatch.countDown();
+                }).start();
+            }
+            countDownLatch.await();
+            return true;
+        } catch (InterruptedException e) {
+            log.error("并行操作被打断", e);
+            Thread.currentThread().interrupt();
+            return false;
+        }
     }
 }

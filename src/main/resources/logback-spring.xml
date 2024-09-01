@@ -5,6 +5,7 @@
     <springProperty scope="context" name="springAppName" source="spring.application.name"/>
     <!-- Example for logging into the build folder of your project -->
     <property name="LOG_FILE" value="logs/${springAppName}"/>
+    <property name="REQUEST_FILE" value="logs/request"/>
 
     <property name="BEAUTIFUL_LOG_PATTERN"
               value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
@@ -39,6 +40,22 @@
             <charset>utf8</charset>
         </encoder>
     </appender>
+
+    <appender name="requestLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${REQUEST_FILE}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${REQUEST_FILE}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <logger name="request" level="INFO" additivity="false">
+        <appender-ref ref="requestLog"/>
+    </logger>
 
     <root level="INFO">
         <appender-ref ref="console"/>
