@@ -63,7 +63,7 @@ public class DomActor {
             if (img == null) {
                 return null;
             }
-            info.setImgUrl(img.attr("src"));
+            info.setImgUrl(imgParam.textFunction().apply(img.attr("src")));
         } else {
             info.setImgUrl("");
         }

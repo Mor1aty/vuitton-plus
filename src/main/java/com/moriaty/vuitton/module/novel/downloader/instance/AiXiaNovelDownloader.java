@@ -44,7 +44,8 @@ public class AiXiaNovelDownloader extends BaseNovelDownloader {
             .setMark("AiXia")
             .setWebsite("https://ixdzs8.com/read/")
             .setContentBaseUrl("https://ixdzs8.com/read/")
-            .setApiBaseUrl("https://ixdzs8.com/novel/");
+            .setApiBaseUrl("https://ixdzs8.com/novel/")
+            .setDisable(true);
 
     @Resource
     private OkHttpClient httpClient;
